@@ -1,3 +1,5 @@
+// src/pages/ProductBacklogPage.jsx
+
 import { Box, Typography, Button, Paper } from "@mui/material";
 import { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -9,7 +11,8 @@ import AddEpicModal from "../Components/AddEpicModal";
 import AddUserStoryModal from "../Components/AddUserStoryModal";
 import AddSprintBacklogModal from "../Components/AddSprintBacklogModal";
 
-export default function ProductBacklogPage() {
+// MODIFICATION: Le composant accepte maintenant les props du parent (ProjectPage).
+export default function ProductBacklogPage({ sprintBacklogs, onAddSprintBacklog, onUpdateSprints }) {
   const [epics, setEpics] = useState([
     { id: "epic-1", title: "Authentification", userStories: [] },
     { id: "epic-2", title: "Panier et Paiement", userStories: [] },
@@ -23,7 +26,8 @@ export default function ProductBacklogPage() {
     { id: "us-5", title: "En tant que client, je veux payer ma commande" },
   ]);
 
-  const [sprintBacklogs, setSprintBacklogs] = useState([]);
+  // MODIFICATION: L'état des sprints a été déplacé vers le composant parent.
+  // const [sprintBacklogs, setSprintBacklogs] = useState([]);
   const [openEpic, setOpenEpic] = useState(false);
   const [openUserStory, setOpenUserStory] = useState(false);
   const [openSprint, setOpenSprint] = useState(false);
@@ -32,8 +36,10 @@ export default function ProductBacklogPage() {
     setEpics([...epics, { id: `epic-${Date.now()}`, ...newEpic, userStories: [] }]);
   const handleAddUserStory = (newUserStory) =>
     setFreeUserStories([...freeUserStories, { id: `us-${Date.now()}`, ...newUserStory }]);
-  const handleAddSprintBacklog = (newSprint) =>
-    setSprintBacklogs([...sprintBacklogs, { id: `sprint-${Date.now()}`, ...newSprint, userStories: [] }]);
+  // MODIFICATION: La fonction locale handleAddSprintBacklog a été supprimée
+  // car nous utilisons maintenant la prop onAddSprintBacklog du parent.
+  // const handleAddSprintBacklog = (newSprint) =>
+  //   setSprintBacklogs([...sprintBacklogs, { id: `sprint-${Date.now()}`, ...newSprint, userStories: [] }]);
 
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -45,7 +51,16 @@ export default function ProductBacklogPage() {
       const epic = epics.find(e => e.id === droppableId);
       if (epic) return { list: epic.userStories, setter: (newList) => setEpics(epics.map(e => e.id === droppableId ? { ...e, userStories: newList } : e)) };
       const sprint = sprintBacklogs.find(s => s.id === droppableId);
-      if (sprint) return { list: sprint.userStories, setter: (newList) => setSprintBacklogs(sprintBacklogs.map(s => s.id === droppableId ? { ...s, userStories: newList } : s)) };
+      if (sprint) {
+        // MODIFICATION: Le setter pour les sprints appelle la fonction passée par le parent (onUpdateSprints).
+        return {
+          list: sprint.userStories,
+          setter: (newList) => {
+            const updatedSprints = sprintBacklogs.map(s => s.id === droppableId ? { ...s, userStories: newList } : s);
+            onUpdateSprints(updatedSprints);
+          }
+        };
+      }
       return null;
     };
 
@@ -66,7 +81,6 @@ export default function ProductBacklogPage() {
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Box sx={{ display: "flex", p: 2, gap: 3, height: "100%" }}>
-
         {/* Epics */}
         <Box sx={{ flex: 1 }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
@@ -76,27 +90,29 @@ export default function ProductBacklogPage() {
           {epics.map(epic => (
             <Droppable droppableId={epic.id} type="user-story" key={epic.id}>
               {(provided) => (
-                <Paper ref={provided.innerRef} {...provided.droppableProps}>
-                  <EpicCard epic={epic} />
-                  {epic.userStories.map((us, index) => (
-                    <Draggable key={us.id} draggableId={us.id} index={index}>
-                      {(dragProvided) => (
-                        <div
-                          ref={dragProvided.innerRef}
-                          {...dragProvided.draggableProps}
-                          {...dragProvided.dragHandleProps}
-                          style={{ marginBottom: 8, ...dragProvided.draggableProps.style }}
-                        >
-                          <UserStoryCard userStory={us} />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </Paper>
+                <Box ref={provided.innerRef} {...provided.droppableProps} sx={{ mb: 2 }}>
+                  <Paper sx={{ p: 2, borderRadius: 2, background: "#f5f5f5", minHeight: 100 }}>
+                    <EpicCard epic={epic} />
+                    {epic.userStories.map((us, index) => (
+                      <Draggable key={us.id} draggableId={us.id} index={index}>
+                        {(dragProvided) => (
+                          <Box
+                            ref={dragProvided.innerRef}
+                            {...dragProvided.draggableProps}
+                            {...dragProvided.dragHandleProps}
+                            sx={{ mb: 1 }}
+                            style={{ ...dragProvided.draggableProps.style }}
+                          >
+                            <UserStoryCard userStory={us} />
+                          </Box>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </Paper>
+                </Box>
               )}
             </Droppable>
-
           ))}
         </Box>
 
@@ -108,34 +124,30 @@ export default function ProductBacklogPage() {
           </Box>
           <Droppable droppableId="free-user-stories" type="user-story">
             {(provided) => (
-              <Paper
-                ref={provided.innerRef}
-                {...provided.droppableProps}
-                sx={{ p: 2, borderRadius: 2, minHeight: 400 }}
-              >
+              <Box ref={provided.innerRef} {...provided.droppableProps} sx={{ minHeight: 400 }}>
                 {freeUserStories.map((us, index) => (
                   <Draggable key={us.id} draggableId={us.id} index={index}>
                     {(dragProvided) => (
-                      <div
+                      <Box
                         ref={dragProvided.innerRef}
                         {...dragProvided.draggableProps}
                         {...dragProvided.dragHandleProps}
-                        style={{
-                          padding: 16,
-                          marginBottom: 8,
-                          borderRadius: 4,
-                          background: "#eee",
+                        sx={{
+                          p: 2,
+                          mb: 1,
+                          borderRadius: 1,
+                          bgcolor: "#eee",
                           userSelect: "none",
-                          ...dragProvided.draggableProps.style
                         }}
+                        style={{ ...dragProvided.draggableProps.style }}
                       >
                         {us.title}
-                      </div>
+                      </Box>
                     )}
                   </Draggable>
                 ))}
                 {provided.placeholder}
-              </Paper>
+              </Box>
             )}
           </Droppable>
         </Box>
@@ -149,28 +161,27 @@ export default function ProductBacklogPage() {
           {sprintBacklogs.map(sprint => (
             <Droppable droppableId={sprint.id} key={sprint.id} type="user-story">
               {(provided) => (
-                <Paper
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                  sx={{ p: 2, mb: 2, minHeight: 100, borderRadius: 2, background: "#f0f0ff" }}
-                >
-                  <SprintBacklogCard sprint={sprint} />
-                  {sprint.userStories.map((us, index) => (
-                    <Draggable key={us.id} draggableId={us.id} index={index}>
-                      {(dragProvided) => (
-                        <div
-                          ref={dragProvided.innerRef}
-                          {...dragProvided.draggableProps}
-                          {...dragProvided.dragHandleProps}
-                          style={{ marginBottom: 8, ...dragProvided.draggableProps.style }}
-                        >
-                          <UserStoryCard userStory={us} />
-                        </div>
-                      )}
-                    </Draggable>
-                  ))}
-                  {provided.placeholder}
-                </Paper>
+                <Box ref={provided.innerRef} {...provided.droppableProps} sx={{ mb: 2 }}>
+                  <Paper sx={{ p: 2, borderRadius: 2, background: "#f0f0ff", minHeight: 100 }}>
+                    <SprintBacklogCard sprint={sprint} />
+                    {sprint.userStories.map((us, index) => (
+                      <Draggable key={us.id} draggableId={us.id} index={index}>
+                        {(dragProvided) => (
+                          <Box
+                            ref={dragProvided.innerRef}
+                            {...dragProvided.draggableProps}
+                            {...dragProvided.dragHandleProps}
+                            sx={{ mb: 1 }}
+                            style={{ ...dragProvided.draggableProps.style }}
+                          >
+                            <UserStoryCard userStory={us} />
+                          </Box>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </Paper>
+                </Box>
               )}
             </Droppable>
           ))}
@@ -181,7 +192,8 @@ export default function ProductBacklogPage() {
       {/* Modals */}
       <AddEpicModal open={openEpic} handleClose={() => setOpenEpic(false)} handleAddEpic={handleAddEpic} />
       <AddUserStoryModal open={openUserStory} handleClose={() => setOpenUserStory(false)} handleAddUserStory={handleAddUserStory} />
-      <AddSprintBacklogModal open={openSprint} handleClose={() => setOpenSprint(false)} handleAddSprintBacklog={handleAddSprintBacklog} />
+      {/* MODIFICATION: La prop onAddSprintBacklog est maintenant passée à la modale */}
+      <AddSprintBacklogModal open={openSprint} handleClose={() => setOpenSprint(false)} handleAddSprintBacklog={onAddSprintBacklog} />
     </DragDropContext>
   );
 }

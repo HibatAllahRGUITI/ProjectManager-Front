@@ -28,7 +28,6 @@ export default function ProjectPage() {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
-      {/* Sidebar - Fixe sur la gauche */}
       <Drawer
         variant="permanent"
         sx={{
@@ -43,19 +42,18 @@ export default function ProjectPage() {
           },
         }}
       >
-        {/* On passe la liste des sprints et la fonction de sélection à la Sidebar */}
         <Sidebar
           onSelectSection={setSection}
           currentSection={section}
+          // On passe les sprints et les fonctions de sélection à la Sidebar
           sprintBacklogs={sprintBacklogs}
           onSelectSprint={handleSelectSprint}
           selectedSprintId={selectedSprintId}
         />
       </Drawer>
 
-      {/* Contenu principal */}
       <Box sx={{ flexGrow: 1, p: 4 }}>
-        {/* On passe la liste des sprints et les fonctions de manipulation au ProductBacklogPage */}
+        {/* Affichage conditionnel basé sur la section choisie */}
         {section === "product" ? (
           <ProductBacklogPage
             sprintBacklogs={sprintBacklogs}

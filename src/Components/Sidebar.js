@@ -2,8 +2,7 @@
 
 import { Box, List, ListItemButton, ListItemIcon, ListItemText, Typography } from "@mui/material";
 import DescriptionIcon from "@mui/icons-material/Description";
-import AssignmentTurnedInIcon from "@mui/icons-material/AssignmentTurnedIn";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // Pour les sprints
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 export default function Sidebar({ onSelectSection, currentSection, sprintBacklogs, onSelectSprint, selectedSprintId }) {
   return (
@@ -12,7 +11,6 @@ export default function Sidebar({ onSelectSection, currentSection, sprintBacklog
         Gestion de Projet
       </Typography>
       <List component="nav">
-        {/* Product Backlog Link */}
         <ListItemButton
           onClick={() => onSelectSection("product")}
           selected={currentSection === "product"}
@@ -26,10 +24,10 @@ export default function Sidebar({ onSelectSection, currentSection, sprintBacklog
           <ListItemText primary="Product Backlog" />
         </ListItemButton>
 
-        {/* Sprint Backlogs List */}
         <Typography variant="subtitle2" sx={{ mt: 3, mb: 1, color: "text.secondary", textTransform: "uppercase" }}>
           Sprints
         </Typography>
+        {/* Boucle sur la liste des sprints reçue par props */}
         {sprintBacklogs.map(sprint => (
           <ListItemButton
             key={sprint.id}
