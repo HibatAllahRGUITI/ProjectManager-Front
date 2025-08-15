@@ -2,7 +2,7 @@
 
 import { Box, Typography, Button, Paper } from "@mui/material";
 import { useState } from "react";
-import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd"; // ✅ remplacé ici
 import AddIcon from "@mui/icons-material/Add";
 import EpicCard from "../Components/EpicCard";
 import UserStoryCard from "../Components/UserStoryCard";
@@ -26,8 +26,6 @@ export default function ProductBacklogPage({ sprintBacklogs, onAddSprintBacklog,
     { id: "us-5", title: "En tant que client, je veux payer ma commande" },
   ]);
 
-  // MODIFICATION: L'état des sprints a été déplacé vers le composant parent.
-  // const [sprintBacklogs, setSprintBacklogs] = useState([]);
   const [openEpic, setOpenEpic] = useState(false);
   const [openUserStory, setOpenUserStory] = useState(false);
   const [openSprint, setOpenSprint] = useState(false);
@@ -36,31 +34,33 @@ export default function ProductBacklogPage({ sprintBacklogs, onAddSprintBacklog,
     setEpics([...epics, { id: `epic-${Date.now()}`, ...newEpic, userStories: [] }]);
   const handleAddUserStory = (newUserStory) =>
     setFreeUserStories([...freeUserStories, { id: `us-${Date.now()}`, ...newUserStory }]);
-  // MODIFICATION: La fonction locale handleAddSprintBacklog a été supprimée
-  // car nous utilisons maintenant la prop onAddSprintBacklog du parent.
-  // const handleAddSprintBacklog = (newSprint) =>
-  //   setSprintBacklogs([...sprintBacklogs, { id: `sprint-${Date.now()}`, ...newSprint, userStories: [] }]);
 
   const onDragEnd = (result) => {
     const { source, destination } = result;
     if (!destination) return;
-    if (source.droppableId === destination.droppableId && source.index === destination.index) return;
 
     const getListAndSetter = (droppableId) => {
-      if (droppableId === "free-user-stories") return { list: freeUserStories, setter: setFreeUserStories };
+      if (droppableId === "free-user-stories")
+        return { list: freeUserStories, setter: setFreeUserStories };
+
       const epic = epics.find(e => e.id === droppableId);
-      if (epic) return { list: epic.userStories, setter: (newList) => setEpics(epics.map(e => e.id === droppableId ? { ...e, userStories: newList } : e)) };
+      if (epic)
+        return {
+          list: epic.userStories,
+          setter: (newList) =>
+            setEpics(epics.map(e => e.id === droppableId ? { ...e, userStories: newList } : e)),
+        };
+
       const sprint = sprintBacklogs.find(s => s.id === droppableId);
-      if (sprint) {
-        // MODIFICATION: Le setter pour les sprints appelle la fonction passée par le parent (onUpdateSprints).
+      if (sprint)
         return {
           list: sprint.userStories,
           setter: (newList) => {
             const updatedSprints = sprintBacklogs.map(s => s.id === droppableId ? { ...s, userStories: newList } : s);
             onUpdateSprints(updatedSprints);
-          }
+          },
         };
-      }
+
       return null;
     };
 
@@ -68,24 +68,36 @@ export default function ProductBacklogPage({ sprintBacklogs, onAddSprintBacklog,
     const destObj = getListAndSetter(destination.droppableId);
     if (!sourceObj || !destObj) return;
 
-    const item = sourceObj.list[source.index];
-    const newSource = [...sourceObj.list];
-    newSource.splice(source.index, 1);
-    sourceObj.setter(newSource);
+    // Même liste → juste réordonner
+    if (source.droppableId === destination.droppableId) {
+      const newList = Array.from(sourceObj.list);
+      const [movedItem] = newList.splice(source.index, 1);
+      newList.splice(destination.index, 0, movedItem);
+      sourceObj.setter(newList);
+    } else {
+      // Listes différentes → déplacer
+      const sourceList = Array.from(sourceObj.list);
+      const [movedItem] = sourceList.splice(source.index, 1);
+      sourceObj.setter(sourceList);
 
-    const newDest = [...destObj.list];
-    newDest.splice(destination.index, 0, item);
-    destObj.setter(newDest);
+      const destList = Array.from(destObj.list);
+      destList.splice(destination.index, 0, movedItem);
+      destObj.setter(destList);
+    }
   };
+
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Box sx={{ display: "flex", p: 2, gap: 3, height: "100%" }}>
+
         {/* Epics */}
         <Box sx={{ flex: 1 }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
             <Typography variant="h5" sx={{ fontWeight: "bold" }}>Epics</Typography>
-            <Button variant="contained" color="primary" onClick={() => setOpenEpic(true)} startIcon={<AddIcon />}>Ajouter Epic</Button>
+            <Button variant="contained" color="primary" onClick={() => setOpenEpic(true)} startIcon={<AddIcon />}>
+              Ajouter Epic
+            </Button>
           </Box>
           {epics.map(epic => (
             <Droppable droppableId={epic.id} type="user-story" key={epic.id}>
@@ -120,34 +132,40 @@ export default function ProductBacklogPage({ sprintBacklogs, onAddSprintBacklog,
         <Box sx={{ flex: 1 }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
             <Typography variant="h5" sx={{ fontWeight: "bold" }}>User Stories</Typography>
-            <Button variant="contained" color="primary" onClick={() => setOpenUserStory(true)} startIcon={<AddIcon />}>Ajouter US</Button>
+            <Button variant="contained" color="primary" onClick={() => setOpenUserStory(true)} startIcon={<AddIcon />}>
+              Ajouter US
+            </Button>
           </Box>
           <Droppable droppableId="free-user-stories" type="user-story">
             {(provided) => (
-              <Box ref={provided.innerRef} {...provided.droppableProps} sx={{ minHeight: 400 }}>
+              <Paper
+                ref={provided.innerRef}
+                {...provided.droppableProps}
+                sx={{ minHeight: 400, p: 2, bgcolor: "#fafafa" }}
+              >
                 {freeUserStories.map((us, index) => (
                   <Draggable key={us.id} draggableId={us.id} index={index}>
                     {(dragProvided) => (
-                      <Box
+                      <div
                         ref={dragProvided.innerRef}
                         {...dragProvided.draggableProps}
                         {...dragProvided.dragHandleProps}
-                        sx={{
-                          p: 2,
-                          mb: 1,
-                          borderRadius: 1,
-                          bgcolor: "#eee",
+                        style={{
+                          padding: "8px",
+                          marginBottom: "8px",
+                          borderRadius: "4px",
+                          background: "#eee",
                           userSelect: "none",
+                          ...dragProvided.draggableProps.style,
                         }}
-                        style={{ ...dragProvided.draggableProps.style }}
                       >
                         {us.title}
-                      </Box>
+                      </div>
                     )}
                   </Draggable>
                 ))}
                 {provided.placeholder}
-              </Box>
+              </Paper>
             )}
           </Droppable>
         </Box>
@@ -156,7 +174,9 @@ export default function ProductBacklogPage({ sprintBacklogs, onAddSprintBacklog,
         <Box sx={{ flex: 1 }}>
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
             <Typography variant="h5" sx={{ fontWeight: "bold" }}>Sprint Backlogs</Typography>
-            <Button variant="contained" color="secondary" onClick={() => setOpenSprint(true)} startIcon={<AddIcon />}>Ajouter Sprint</Button>
+            <Button variant="contained" color="secondary" onClick={() => setOpenSprint(true)} startIcon={<AddIcon />}>
+              Ajouter Sprint
+            </Button>
           </Box>
           {sprintBacklogs.map(sprint => (
             <Droppable droppableId={sprint.id} key={sprint.id} type="user-story">
@@ -192,7 +212,6 @@ export default function ProductBacklogPage({ sprintBacklogs, onAddSprintBacklog,
       {/* Modals */}
       <AddEpicModal open={openEpic} handleClose={() => setOpenEpic(false)} handleAddEpic={handleAddEpic} />
       <AddUserStoryModal open={openUserStory} handleClose={() => setOpenUserStory(false)} handleAddUserStory={handleAddUserStory} />
-      {/* MODIFICATION: La prop onAddSprintBacklog est maintenant passée à la modale */}
       <AddSprintBacklogModal open={openSprint} handleClose={() => setOpenSprint(false)} handleAddSprintBacklog={onAddSprintBacklog} />
     </DragDropContext>
   );
