@@ -1,12 +1,14 @@
+// src/pages/ProjectPage.jsx
 import { Box, Drawer } from "@mui/material";
+import { useState } from "react";
 import Sidebar from "../Components/Sidebar";
 import ProductBacklogPage from "./ProductBacklogPage";
 import SprintBacklogPage from "./SprintBacklogPage";
-import { useState } from "react";
+import InviteModal from "../Components/InviteModal";
 
 // Structure de base pour une nouvelle user story
 const newUserStoryBase = {
-  tasks: { "to-do": [], "in-progress": [], "done": [] }
+  tasks: { "to-do": [], "in-progress": [], "done": [] },
 };
 
 export default function ProjectPage() {
@@ -17,7 +19,6 @@ export default function ProjectPage() {
     { id: "epic-2", title: "Panier et Paiement", userStories: [] },
   ]);
   const [freeUserStories, setFreeUserStories] = useState([
-    // Toutes les user stories doivent avoir la propriété `tasks`
     { id: "us-1", title: "En tant que client, je veux m'inscrire", ...newUserStoryBase },
     { id: "us-2", title: "En tant que client, je veux me connecter", ...newUserStoryBase },
     { id: "us-3", title: "En tant qu'admin, je veux réinitialiser un mot de passe", ...newUserStoryBase },
@@ -26,36 +27,38 @@ export default function ProjectPage() {
   ]);
   const [selectedSprintId, setSelectedSprintId] = useState(null);
 
+  // Pour le modal d'invitation
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [invitedUsers, setInvitedUsers] = useState([]);
+
+  // Gestion des invitations
+  const handleInviteUser = ({ email, role }) => {
+    setInvitedUsers([...invitedUsers, { email, role }]);
+    console.log("Utilisateur invité:", email, role);
+  };
+
   const handleAddSprintBacklog = (newSprint) => {
     const userStories = newSprint.userStories || [];
     const newSprintWithId = {
       id: `sprint-${Date.now()}`,
       ...newSprint,
-      userStories: userStories.map(us => ({
+      userStories: userStories.map((us) => ({
         ...us,
-        // Assurez-vous que chaque user story a la structure de tâches correcte
-        tasks: us.tasks || { "to-do": [], "in-progress": [], "done": [] }
-      }))
+        tasks: us.tasks || { "to-do": [], "in-progress": [], "done": [] },
+      })),
     };
     setSprintBacklogs([...sprintBacklogs, newSprintWithId]);
   };
 
-  const handleUpdateEpics = (newEpics) => {
-    setEpics(newEpics);
-  };
-
-  const handleUpdateFreeUserStories = (newStories) => {
-    setFreeUserStories(newStories.map(us => ({
-      ...us,
-      // Assurez-vous que les user stories déplacées ont la propriété 'tasks'
-      tasks: us.tasks || { "to-do": [], "in-progress": [], "done": [] }
-    })));
-  };
-
-  const handleUpdateSprints = (newSprints) => {
-    setSprintBacklogs(newSprints);
-  };
-
+  const handleUpdateEpics = (newEpics) => setEpics(newEpics);
+  const handleUpdateFreeUserStories = (newStories) =>
+    setFreeUserStories(
+      newStories.map((us) => ({
+        ...us,
+        tasks: us.tasks || { "to-do": [], "in-progress": [], "done": [] },
+      }))
+    );
+  const handleUpdateSprints = (newSprints) => setSprintBacklogs(newSprints);
   const handleSelectSprint = (sprintId) => {
     setSelectedSprintId(sprintId);
     setSection("sprint");
@@ -78,13 +81,17 @@ export default function ProjectPage() {
         }}
       >
         <Sidebar
-          onSelectSection={setSection}
+          onSelectSection={(sec) => {
+            if (sec === "invite") setIsInviteModalOpen(true);
+            else setSection(sec);
+          }}
           currentSection={section}
           sprintBacklogs={sprintBacklogs}
           onSelectSprint={handleSelectSprint}
           selectedSprintId={selectedSprintId}
         />
       </Drawer>
+
       <Box sx={{ flexGrow: 1, p: 4 }}>
         {section === "product" ? (
           <ProductBacklogPage
@@ -96,12 +103,17 @@ export default function ProjectPage() {
             onAddSprintBacklog={handleAddSprintBacklog}
             onUpdateSprints={handleUpdateSprints}
           />
-        ) : (
-          <SprintBacklogPage
-            sprint={sprintBacklogs.find(s => s.id === selectedSprintId)}
-          />
-        )}
+        ) : section === "sprint" ? (
+          <SprintBacklogPage sprint={sprintBacklogs.find((s) => s.id === selectedSprintId)} />
+        ) : null}
       </Box>
+
+      {/* Modal pour inviter */}
+      <InviteModal
+        open={isInviteModalOpen}
+        handleClose={() => setIsInviteModalOpen(false)}
+        handleInvite={handleInviteUser}
+      />
     </Box>
   );
 }

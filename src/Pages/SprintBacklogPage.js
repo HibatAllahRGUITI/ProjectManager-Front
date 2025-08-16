@@ -1,11 +1,10 @@
-// src/pages/SprintBacklogPage.jsx
-
 import { Box, Typography, Button, Paper } from "@mui/material";
 import { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddIcon from "@mui/icons-material/Add";
 import TaskCard from "../Components/TaskCard";
 import AddTaskModal from "../Components/AddTaskModal";
+import DetailModal from "../Components/DetailModal"; // Modal générique pour task
 
 const initialData = {
     id: "sprint-1",
@@ -34,15 +33,17 @@ const initialData = {
 
 export default function SprintBacklogPage({ sprint: propSprint }) {
     const [sprint, setSprint] = useState(propSprint || initialData);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
     const [selectedUserStoryId, setSelectedUserStoryId] = useState(null);
+
+    const [selectedTask, setSelectedTask] = useState(null);
 
     const handleAddTask = (taskTitle) => {
         const newTaskId = `task-${Date.now()}`;
         const newTask = { id: newTaskId, title: taskTitle };
 
-        setSprint(prevSprint => {
-            const newUserStories = prevSprint.userStories.map(us => {
+        setSprint((prevSprint) => {
+            const newUserStories = prevSprint.userStories.map((us) => {
                 if (us.id === selectedUserStoryId) {
                     return {
                         ...us,
@@ -56,7 +57,37 @@ export default function SprintBacklogPage({ sprint: propSprint }) {
             });
             return { ...prevSprint, userStories: newUserStories };
         });
-        setIsModalOpen(false);
+        setIsAddTaskModalOpen(false);
+    };
+
+    const handleUpdateTask = (updatedTask) => {
+        setSprint((prevSprint) => {
+            const newUserStories = prevSprint.userStories.map((us) => {
+                const newTasks = {};
+                Object.keys(us.tasks).forEach((col) => {
+                    newTasks[col] = us.tasks[col].map((t) =>
+                        t.id === updatedTask.id ? updatedTask : t
+                    );
+                });
+                return { ...us, tasks: newTasks };
+            });
+            return { ...prevSprint, userStories: newUserStories };
+        });
+        setSelectedTask(null);
+    };
+
+    const handleDeleteTask = (taskId) => {
+        setSprint((prevSprint) => {
+            const newUserStories = prevSprint.userStories.map((us) => {
+                const newTasks = {};
+                Object.keys(us.tasks).forEach((col) => {
+                    newTasks[col] = us.tasks[col].filter((t) => t.id !== taskId);
+                });
+                return { ...us, tasks: newTasks };
+            });
+            return { ...prevSprint, userStories: newUserStories };
+        });
+        setSelectedTask(null);
     };
 
     const onDragEnd = (result) => {
@@ -66,16 +97,14 @@ export default function SprintBacklogPage({ sprint: propSprint }) {
         const [sourceUserStoryId, sourceColumnId] = source.droppableId.split("__");
         const [destUserStoryId, destColumnId] = destination.droppableId.split("__");
 
-        setSprint(prevSprint => {
+        setSprint((prevSprint) => {
             const newUserStories = [...prevSprint.userStories];
-            const sourceStory = newUserStories.find(us => us.id === sourceUserStoryId);
-            const destStory = newUserStories.find(us => us.id === destUserStoryId);
-
+            const sourceStory = newUserStories.find((us) => us.id === sourceUserStoryId);
+            const destStory = newUserStories.find((us) => us.id === destUserStoryId);
             if (!sourceStory || !destStory) return prevSprint;
 
             const sourceTasks = [...sourceStory.tasks[sourceColumnId]];
             const destTasks = [...destStory.tasks[destColumnId]];
-
             const [movedTask] = sourceTasks.splice(source.index, 1);
 
             if (sourceUserStoryId === destUserStoryId && sourceColumnId === destColumnId) {
@@ -91,13 +120,13 @@ export default function SprintBacklogPage({ sprint: propSprint }) {
         });
     };
 
-
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Box sx={{ p: 4 }}>
                 <Typography variant="h4" sx={{ fontWeight: "bold", mb: 4 }}>
                     Sprint: {sprint.title}
                 </Typography>
+
                 <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
                     {sprint.userStories.map((us) => (
                         <Paper key={us.id} elevation={3} sx={{ p: 2, borderRadius: 2 }}>
@@ -107,13 +136,14 @@ export default function SprintBacklogPage({ sprint: propSprint }) {
                                     variant="contained"
                                     onClick={() => {
                                         setSelectedUserStoryId(us.id);
-                                        setIsModalOpen(true);
+                                        setIsAddTaskModalOpen(true);
                                     }}
                                     startIcon={<AddIcon />}
                                 >
-                                    Tâche
+                                    Ajouter Tâche
                                 </Button>
                             </Box>
+
                             <Box sx={{ display: "flex", gap: 2 }}>
                                 {["to-do", "in-progress", "done"].map((columnId) => (
                                     <Droppable key={`${us.id}__${columnId}`} droppableId={`${us.id}__${columnId}`} type="TASK">
@@ -134,6 +164,7 @@ export default function SprintBacklogPage({ sprint: propSprint }) {
                                                                 {...dragProvided.draggableProps}
                                                                 {...dragProvided.dragHandleProps}
                                                                 style={{ ...dragProvided.draggableProps.style }}
+                                                                onClick={() => setSelectedTask(task)}
                                                             >
                                                                 <TaskCard task={task} />
                                                             </div>
@@ -149,13 +180,25 @@ export default function SprintBacklogPage({ sprint: propSprint }) {
                         </Paper>
                     ))}
                 </Box>
-
             </Box>
+
+            {/* Modals */}
             <AddTaskModal
-                open={isModalOpen}
-                handleClose={() => setIsModalOpen(false)}
+                open={isAddTaskModalOpen}
+                handleClose={() => setIsAddTaskModalOpen(false)}
                 handleAddTask={handleAddTask}
             />
+
+            {selectedTask && (
+                <DetailModal
+                    open={!!selectedTask}
+                    type="task"
+                    item={selectedTask}
+                    handleClose={() => setSelectedTask(null)}
+                    handleUpdate={handleUpdateTask}
+                    handleDelete={handleDeleteTask}
+                />
+            )}
         </DragDropContext>
     );
 }
