@@ -67,7 +67,6 @@ export default function Login() {
           Se connecter
         </Button>
 
-        {/* Section des liens */}
         <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           <Typography
             variant="body2"

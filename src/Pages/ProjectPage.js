@@ -1,4 +1,3 @@
-// src/pages/ProjectPage.jsx
 import { Box, Drawer } from "@mui/material";
 import { useState } from "react";
 import Sidebar from "../Components/Sidebar";
@@ -6,7 +5,6 @@ import ProductBacklogPage from "./ProductBacklogPage";
 import SprintBacklogPage from "./SprintBacklogPage";
 import InviteModal from "../Components/InviteModal";
 
-// Structure de base pour une nouvelle user story
 const newUserStoryBase = {
   tasks: { "to-do": [], "in-progress": [], "done": [] },
 };
@@ -27,11 +25,9 @@ export default function ProjectPage() {
   ]);
   const [selectedSprintId, setSelectedSprintId] = useState(null);
 
-  // Pour le modal d'invitation
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [invitedUsers, setInvitedUsers] = useState([]);
 
-  // Gestion des invitations
   const handleInviteUser = ({ email, role }) => {
     setInvitedUsers([...invitedUsers, { email, role }]);
     console.log("Utilisateur invité:", email, role);
@@ -108,7 +104,6 @@ export default function ProjectPage() {
         ) : null}
       </Box>
 
-      {/* Modal pour inviter */}
       <InviteModal
         open={isInviteModalOpen}
         handleClose={() => setIsInviteModalOpen(false)}

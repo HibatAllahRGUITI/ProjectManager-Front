@@ -1,14 +1,25 @@
+// Fichier : AddProjectModal.jsx
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from "@mui/material";
 
-export default function AddProjectModal({ open, handleClose, handleAddProject, projectTitle, setProjectTitle, projectDesc, setProjectDesc }) {
+export default function AddProjectModal({
+  open,
+  handleClose,
+  handleAddProject,
+  projectTitle,
+  setProjectTitle,
+  projectDesc,
+  setProjectDesc,
+  titleText,
+  buttonText
+}) {
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Ajouter un nouveau projet</DialogTitle>
+      <DialogTitle>{titleText}</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
           margin="dense"
-          label="Titre du projet"
+          label="Title of the project"
           fullWidth
           variant="outlined"
           value={projectTitle}
@@ -26,8 +37,10 @@ export default function AddProjectModal({ open, handleClose, handleAddProject, p
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} color="secondary">Annuler</Button>
-        <Button onClick={handleAddProject} variant="contained" color="primary">Ajouter</Button>
+        <Button onClick={handleClose} color="secondary">Cancel</Button>
+        <Button onClick={handleAddProject} variant="contained" color="primary">
+          {buttonText}
+        </Button>
       </DialogActions>
     </Dialog>
   );
