@@ -83,7 +83,7 @@ export default function ProductBacklogPage({
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
             <Typography variant="h5" sx={{ fontWeight: "bold" }}>Epics</Typography>
             <Button variant="contained" color="primary" onClick={() => setOpenEpic(true)} startIcon={<AddIcon />}>
-              Ajouter Epic
+              Add an Epic
             </Button>
           </Box>
           <Box>
@@ -122,7 +122,7 @@ export default function ProductBacklogPage({
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
             <Typography variant="h5" sx={{ fontWeight: "bold" }}>User Stories</Typography>
             <Button variant="contained" color="primary" onClick={() => setOpenUserStory(true)} startIcon={<AddIcon />}>
-              Ajouter US
+              Add a US
             </Button>
           </Box>
           <Droppable droppableId="free-user-stories" type="user-story">
@@ -157,7 +157,7 @@ export default function ProductBacklogPage({
           <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
             <Typography variant="h5" sx={{ fontWeight: "bold" }}>Sprint Backlogs</Typography>
             <Button variant="contained" color="secondary" onClick={() => setOpenSprint(true)} startIcon={<AddIcon />}>
-              Ajouter Sprint
+              Add a Sprint
             </Button>
           </Box>
           <Box>

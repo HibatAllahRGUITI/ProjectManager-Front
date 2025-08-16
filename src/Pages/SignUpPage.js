@@ -33,17 +33,17 @@ export default function SignUpPage() {
             mb: 4,
           }}
         >
-          S'inscrire
+          Sign Up
         </Typography>
         <TextField
-          label="Adresse e-mail"
+          label="E-mail Address"
           variant="outlined"
           fullWidth
           margin="normal"
           sx={{ '& .MuiOutlinedInput-notchedOutline': { borderRadius: '8px' } }}
         />
         <TextField
-          label="Mot de passe"
+          label="Password"
           variant="outlined"
           type="password"
           fullWidth
@@ -51,7 +51,7 @@ export default function SignUpPage() {
           sx={{ mt: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: '8px' } }}
         />
         <TextField
-          label="Confirmer le mot de passe"
+          label="Confirm the password"
           variant="outlined"
           type="password"
           fullWidth
@@ -70,9 +70,9 @@ export default function SignUpPage() {
             fontSize: '1rem',
             boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
           }}
-          onClick={() => alert("Inscription en cours...")} // Remplacer par la logique d'inscription
+          onClick={() => alert("Signing UUp...")}
         >
-          Créer un compte
+          Create an Account
         </Button>
         <Typography
           variant="body2"
@@ -87,7 +87,7 @@ export default function SignUpPage() {
           }}
           onClick={() => navigate("/")}
         >
-          Déjà un compte ? Se connecter
+          Already have an account ? Connect
         </Typography>
       </Paper>
     </Box>

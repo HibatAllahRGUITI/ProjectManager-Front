@@ -11,11 +11,11 @@ import { useState, useEffect } from "react";
 
 export default function DetailModal({
     open,
-    type,          // "task", "userStory", "epic"
-    item,          // l'objet à afficher/modifier
+    type,
+    item,
     handleClose,
-    handleUpdate,  // fonction pour mise à jour
-    handleDelete,  // fonction pour suppression
+    handleUpdate,
+    handleDelete,
 }) {
     const [title, setTitle] = useState("");
 
@@ -34,11 +34,11 @@ export default function DetailModal({
 
     return (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-            <DialogTitle>Détails {type}</DialogTitle>
+            <DialogTitle>Details {type}</DialogTitle>
             <DialogContent>
                 <Box sx={{ mt: 2 }}>
                     <TextField
-                        label="Titre"
+                        label="Title"
                         fullWidth
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
@@ -48,11 +48,11 @@ export default function DetailModal({
             </DialogContent>
             <DialogActions>
                 <Button color="error" onClick={onDelete}>
-                    Supprimer
+                    delete
                 </Button>
-                <Button onClick={handleClose}>Annuler</Button>
+                <Button onClick={handleClose}>Cancel</Button>
                 <Button variant="contained" onClick={onSave}>
-                    Sauvegarder
+                    Save
                 </Button>
             </DialogActions>
         </Dialog>

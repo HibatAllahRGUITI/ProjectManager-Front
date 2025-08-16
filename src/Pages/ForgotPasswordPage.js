@@ -33,13 +33,13 @@ export default function ForgotPasswordPage() {
             mb: 2,
           }}
         >
-          Mot de passe oublié ?
+          forgot Password ?
         </Typography>
         <Typography variant="body2" color="text.secondary" gutterBottom sx={{ mb: 4 }}>
-          Entrez votre adresse e-mail pour recevoir un lien de réinitialisation.
+          Enter your email address to recieve a reset link.
         </Typography>
         <TextField
-          label="Adresse e-mail"
+          label="E-mail Address"
           variant="outlined"
           fullWidth
           margin="normal"
@@ -57,9 +57,9 @@ export default function ForgotPasswordPage() {
             fontSize: '1rem',
             boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
           }}
-          onClick={() => alert("Lien de réinitialisation envoyé !")} // Remplacer par la logique d'envoi d'e-mail
+          onClick={() => alert("Reset Link is sent !")}
         >
-          Réinitialiser le mot de passe
+          Reset Password
         </Button>
         <Typography
           variant="body2"
@@ -74,7 +74,7 @@ export default function ForgotPasswordPage() {
           }}
           onClick={() => navigate("/")}
         >
-          Retour à la connexion
+          Back to Login
         </Typography>
       </Paper>
     </Box>

@@ -8,7 +8,7 @@ export default function Sidebar({ onSelectSection, currentSection, sprintBacklog
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-        Gestion de Projet
+        Project Manger
       </Typography>
 
       <List component="nav">
@@ -65,7 +65,7 @@ export default function Sidebar({ onSelectSection, currentSection, sprintBacklog
           }}
         >
           <ListItemIcon><PersonAddIcon /></ListItemIcon>
-          <ListItemText primary="Inviter des gens" />
+          <ListItemText primary="Invite People " />
         </ListItemButton>
       </List>
     </Box>

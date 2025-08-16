@@ -36,14 +36,14 @@ export default function Login() {
           Connexion
         </Typography>
         <TextField
-          label="Adresse e-mail"
+          label="E-mail Address"
           variant="outlined"
           fullWidth
           margin="normal"
           sx={{ mb: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: '8px' } }}
         />
         <TextField
-          label="Mot de passe"
+          label="Password"
           variant="outlined"
           type="password"
           fullWidth
@@ -64,7 +64,7 @@ export default function Login() {
           }}
           onClick={() => navigate("/dashboard")}
         >
-          Se connecter
+          Connexion
         </Button>
 
         <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
@@ -81,7 +81,7 @@ export default function Login() {
             }}
             onClick={() => navigate("/forgot-password")}
           >
-            Mot de passe oublié ?
+            Forgot Password ?
           </Typography>
           <Typography
             variant="body2"
@@ -91,7 +91,7 @@ export default function Login() {
               cursor: 'pointer',
             }}
           >
-            Pas encore de compte ?{' '}
+            No Account yet ?{' '}
             <Box
               component="span"
               onClick={() => navigate("/signup")}
@@ -104,7 +104,7 @@ export default function Login() {
                 },
               }}
             >
-              S'inscrire
+              Sign Up
             </Box>
           </Typography>
         </Box>

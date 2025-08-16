@@ -14,20 +14,20 @@ export default function AddSprintBacklogModal({ open, handleClose, handleAddSpri
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Ajouter un SprintBacklog</DialogTitle>
+      <DialogTitle>Add a SprintBacklog</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
           margin="dense"
-          label="Titre du SprintBacklog"
+          label="Title of the SprintBacklog"
           fullWidth
           value={title}
           onChange={e => setTitle(e.target.value)}
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Annuler</Button>
-        <Button variant="contained" onClick={handleSubmit}>Ajouter</Button>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button variant="contained" onClick={handleSubmit}>Add</Button>
       </DialogActions>
     </Dialog>
   );

@@ -34,11 +34,11 @@ export default function AddTaskModal({ open, handleClose, handleAddTask }) {
         >
             <Box sx={style} component="form" onSubmit={handleSubmit}>
                 <Typography id="add-task-modal-title" variant="h6" component="h2" mb={2}>
-                    Ajouter une nouvelle tâche
+                    Add a New Task
                 </Typography>
                 <TextField
                     fullWidth
-                    label="Titre de la tâche"
+                    label="Title of the task"
                     variant="outlined"
                     value={taskTitle}
                     onChange={(e) => setTaskTitle(e.target.value)}
@@ -47,10 +47,10 @@ export default function AddTaskModal({ open, handleClose, handleAddTask }) {
                 />
                 <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
                     <Button variant="outlined" onClick={handleClose}>
-                        Annuler
+                        Cancel
                     </Button>
                     <Button variant="contained" type="submit">
-                        Ajouter
+                        Add
                     </Button>
                 </Box>
             </Box>

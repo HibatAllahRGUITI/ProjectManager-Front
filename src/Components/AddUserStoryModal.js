@@ -12,20 +12,20 @@ export default function AddUserStoryModal({ open, handleClose, handleAddUserStor
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Ajouter une user story</DialogTitle>
+      <DialogTitle>Add a user story</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
           margin="dense"
-          label="Titre de la user story"
+          label="Title of the user story"
           fullWidth
           value={title}
           onChange={e => setTitle(e.target.value)}
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Annuler</Button>
-        <Button variant="contained" onClick={handleSubmit}>Ajouter</Button>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button variant="contained" onClick={handleSubmit}>Add</Button>
       </DialogActions>
     </Dialog>
   );

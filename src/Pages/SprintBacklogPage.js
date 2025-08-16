@@ -4,7 +4,7 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddIcon from "@mui/icons-material/Add";
 import TaskCard from "../Components/TaskCard";
 import AddTaskModal from "../Components/AddTaskModal";
-import DetailModal from "../Components/DetailModal"; // Modal générique pour task
+import DetailModal from "../Components/DetailModal";
 
 const initialData = {
     id: "sprint-1",
@@ -140,7 +140,7 @@ export default function SprintBacklogPage({ sprint: propSprint }) {
                                     }}
                                     startIcon={<AddIcon />}
                                 >
-                                    Ajouter Tâche
+                                    Add a Task
                                 </Button>
                             </Box>
 
@@ -182,7 +182,6 @@ export default function SprintBacklogPage({ sprint: propSprint }) {
                 </Box>
             </Box>
 
-            {/* Modals */}
             <AddTaskModal
                 open={isAddTaskModalOpen}
                 handleClose={() => setIsAddTaskModalOpen(false)}

@@ -21,7 +21,7 @@ export default function InviteModal({ open, handleClose, handleInvite }) {
                 bgcolor: 'background.paper', p: 4, borderRadius: 2, width: 300,
                 boxShadow: 24
             }}>
-                <Typography variant="h6" sx={{ mb: 2 }}>Inviter un utilisateur</Typography>
+                <Typography variant="h6" sx={{ mb: 2 }}>Invite a user</Typography>
                 <TextField
                     label="Email"
                     type="email"
@@ -31,7 +31,7 @@ export default function InviteModal({ open, handleClose, handleInvite }) {
                     sx={{ mb: 2 }}
                 />
                 <TextField
-                    label="Rôle"
+                    label="Role"
                     select
                     fullWidth
                     value={role}
@@ -42,7 +42,7 @@ export default function InviteModal({ open, handleClose, handleInvite }) {
                     <MenuItem value="scrumMaster">ScrumMaster</MenuItem>
                     <MenuItem value="developer">Developer</MenuItem>
                 </TextField>
-                <Button variant="contained" fullWidth onClick={handleSubmit}>Inviter</Button>
+                <Button variant="contained" fullWidth onClick={handleSubmit}>Invite</Button>
             </Box>
         </Modal>
     );

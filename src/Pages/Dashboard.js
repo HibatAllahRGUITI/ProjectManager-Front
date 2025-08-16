@@ -1,7 +1,7 @@
 import { Container, Grid, Typography, Button, Box, Menu, MenuItem, IconButton } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import ProjectCard from '../Components/ProjectCard';
 import AddProjectModal from '../Components/AddProjectModal';
 import ProjectPage from './ProjectPage';
@@ -112,12 +112,12 @@ export default function Dashboard() {
         <>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexDirection: { xs: 'column', sm: 'row' } }}>
             <Typography variant="h4" component="h1" gutterBottom sx={{ fontWeight: 'bold', mb: { xs: 2, sm: 0 } }}>
-              Mes projets
+              My projects
             </Typography>
             <Button variant="contained" color="primary" startIcon={<AddIcon />}
               sx={{ py: 1.5, px: 3, borderRadius: 2, textTransform: 'none', fontSize: '1rem', boxShadow: '0px 4px 15px rgba(0,0,0,0.1)' }}
               onClick={handleOpenAdd}>
-              Ajouter un projet
+              Add a Project
             </Button>
           </Box>
 

@@ -12,20 +12,20 @@ export default function AddEpicModal({ open, handleClose, handleAddEpic }) {
 
   return (
     <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Ajouter un Epic</DialogTitle>
+      <DialogTitle>Add an Epic</DialogTitle>
       <DialogContent>
         <TextField
           autoFocus
           margin="dense"
-          label="Titre de l'Epic"
+          label="Title of the Epic"
           fullWidth
           value={title}
           onChange={e => setTitle(e.target.value)}
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Annuler</Button>
-        <Button variant="contained" onClick={handleSubmit}>Ajouter</Button>
+        <Button onClick={handleClose}>Cancel</Button>
+        <Button variant="contained" onClick={handleSubmit}>Add</Button>
       </DialogActions>
     </Dialog>
   );
