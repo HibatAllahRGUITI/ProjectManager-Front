@@ -1,8 +1,7 @@
 import { Container, Grid, Typography, Button, Box } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 import AddIcon from '@mui/icons-material/Add';
 import { useState } from "react";
-import ProjectCard from '../Components/ProjectCard'; 
+import ProjectCard from '../Components/ProjectCard';
 import AddProjectModal from '../Components/AddProjectModal';
 
 export default function Dashboard() {
@@ -10,21 +9,21 @@ export default function Dashboard() {
   const [projectTitle, setProjectTitle] = useState("");
   const [projectDesc, setProjectDesc] = useState("");
   const [projects, setProjects] = useState([
-    { 
-      id: 1, 
-      name: "Site Web E-commerce", 
+    {
+      id: 1,
+      name: "Site Web E-commerce",
       description: "Conception et développement d'une boutique en ligne pour la vente de produits artisanaux.",
       productBacklog: "ProductBacklog-Ecommerce"
     },
-    { 
-      id: 2, 
-      name: "Application Mobile de Fitness", 
+    {
+      id: 2,
+      name: "Application Mobile de Fitness",
       description: "Création d'une application mobile pour suivre les entraînements et les progrès des utilisateurs.",
       productBacklog: "ProductBacklog-Fitness"
     },
-    { 
-      id: 3, 
-      name: "Plateforme de Gestion de Projet", 
+    {
+      id: 3,
+      name: "Plateforme de Gestion de Projet",
       description: "Développement d'un outil interne pour optimiser le suivi des tâches et des équipes.",
       productBacklog: "ProductBacklog-GestionProjet"
     },
@@ -48,27 +47,27 @@ export default function Dashboard() {
 
   return (
     <Container sx={{ mt: 6, p: { xs: 2, md: 4 } }}>
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          mb: 4, 
-          flexDirection: { xs: 'column', sm: 'row' } 
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 4,
+          flexDirection: { xs: 'column', sm: 'row' }
         }}
       >
-        <Typography 
-          variant="h4" 
-          component="h1" 
+        <Typography
+          variant="h4"
+          component="h1"
           gutterBottom
           sx={{ fontWeight: 'bold', mb: { xs: 2, sm: 0 } }}
         >
           Mes projets
         </Typography>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          startIcon={<AddIcon />} 
+        <Button
+          variant="contained"
+          color="primary"
+          startIcon={<AddIcon />}
           sx={{
             py: 1.5,
             px: 3,

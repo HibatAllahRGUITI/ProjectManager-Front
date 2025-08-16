@@ -1,20 +1,55 @@
-// src/pages/ProjectPage.jsx
-
 import { Box, Drawer } from "@mui/material";
 import Sidebar from "../Components/Sidebar";
 import ProductBacklogPage from "./ProductBacklogPage";
 import SprintBacklogPage from "./SprintBacklogPage";
 import { useState } from "react";
 
+// Structure de base pour une nouvelle user story
+const newUserStoryBase = {
+  tasks: { "to-do": [], "in-progress": [], "done": [] }
+};
+
 export default function ProjectPage() {
   const [section, setSection] = useState("product");
-  // L'état des sprints est remonté ici
   const [sprintBacklogs, setSprintBacklogs] = useState([]);
+  const [epics, setEpics] = useState([
+    { id: "epic-1", title: "Authentification", userStories: [] },
+    { id: "epic-2", title: "Panier et Paiement", userStories: [] },
+  ]);
+  const [freeUserStories, setFreeUserStories] = useState([
+    // Toutes les user stories doivent avoir la propriété `tasks`
+    { id: "us-1", title: "En tant que client, je veux m'inscrire", ...newUserStoryBase },
+    { id: "us-2", title: "En tant que client, je veux me connecter", ...newUserStoryBase },
+    { id: "us-3", title: "En tant qu'admin, je veux réinitialiser un mot de passe", ...newUserStoryBase },
+    { id: "us-4", title: "En tant que client, je veux ajouter des produits au panier", ...newUserStoryBase },
+    { id: "us-5", title: "En tant que client, je veux payer ma commande", ...newUserStoryBase },
+  ]);
   const [selectedSprintId, setSelectedSprintId] = useState(null);
 
   const handleAddSprintBacklog = (newSprint) => {
-    const newSprintWithId = { id: `sprint-${Date.now()}`, ...newSprint, userStories: [] };
+    const userStories = newSprint.userStories || [];
+    const newSprintWithId = {
+      id: `sprint-${Date.now()}`,
+      ...newSprint,
+      userStories: userStories.map(us => ({
+        ...us,
+        // Assurez-vous que chaque user story a la structure de tâches correcte
+        tasks: us.tasks || { "to-do": [], "in-progress": [], "done": [] }
+      }))
+    };
     setSprintBacklogs([...sprintBacklogs, newSprintWithId]);
+  };
+
+  const handleUpdateEpics = (newEpics) => {
+    setEpics(newEpics);
+  };
+
+  const handleUpdateFreeUserStories = (newStories) => {
+    setFreeUserStories(newStories.map(us => ({
+      ...us,
+      // Assurez-vous que les user stories déplacées ont la propriété 'tasks'
+      tasks: us.tasks || { "to-do": [], "in-progress": [], "done": [] }
+    })));
   };
 
   const handleUpdateSprints = (newSprints) => {
@@ -45,17 +80,18 @@ export default function ProjectPage() {
         <Sidebar
           onSelectSection={setSection}
           currentSection={section}
-          // On passe les sprints et les fonctions de sélection à la Sidebar
           sprintBacklogs={sprintBacklogs}
           onSelectSprint={handleSelectSprint}
           selectedSprintId={selectedSprintId}
         />
       </Drawer>
-
       <Box sx={{ flexGrow: 1, p: 4 }}>
-        {/* Affichage conditionnel basé sur la section choisie */}
         {section === "product" ? (
           <ProductBacklogPage
+            epics={epics}
+            onUpdateEpics={handleUpdateEpics}
+            freeUserStories={freeUserStories}
+            onUpdateFreeUserStories={handleUpdateFreeUserStories}
             sprintBacklogs={sprintBacklogs}
             onAddSprintBacklog={handleAddSprintBacklog}
             onUpdateSprints={handleUpdateSprints}
