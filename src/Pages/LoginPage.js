@@ -1,8 +1,30 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Paper, Typography, TextField, Button, Box } from "@mui/material";
+import { login } from "../Services/authService"
 
 export default function Login() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      alert("Please fill in all fields");
+      return;
+    }
+
+    try {
+      const user = await login(email, password);
+      navigate("/dashboard");
+    } catch (err) {
+      alert("Invalid email or password");
+    }
+  };
+
+
 
   return (
     <Box
@@ -26,6 +48,8 @@ export default function Login() {
           boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.08)',
         }}
       >
+
+
         <Typography variant="h4" component="h1" gutterBottom
           sx={{
             fontWeight: 'bold',
@@ -40,6 +64,8 @@ export default function Login() {
           variant="outlined"
           fullWidth
           margin="normal"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
           sx={{ mb: 2, '& .MuiOutlinedInput-notchedOutline': { borderRadius: '8px' } }}
         />
         <TextField
@@ -48,6 +74,8 @@ export default function Login() {
           type="password"
           fullWidth
           margin="normal"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
           sx={{ '& .MuiOutlinedInput-notchedOutline': { borderRadius: '8px' } }}
         />
         <Button
@@ -62,13 +90,13 @@ export default function Login() {
             fontSize: '1rem',
             boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
           }}
-          onClick={() => navigate("/dashboard")}
+          onClick={handleLogin}
         >
           Connexion
         </Button>
 
         <Box sx={{ mt: 3, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <Typography
+          {/* <Typography
             variant="body2"
             sx={{
               color: 'text.secondary',
@@ -79,10 +107,9 @@ export default function Login() {
                 color: 'primary.main',
               },
             }}
-            onClick={() => navigate("/forgot-password")}
-          >
+            onClick={() => navigate("/forgot-password")}          >
             Forgot Password ?
-          </Typography>
+          </Typography> */}
           <Typography
             variant="body2"
             sx={{
