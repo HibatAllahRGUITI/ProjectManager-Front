@@ -28,7 +28,7 @@ export default function ProjectCard({ project }) {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <DescriptionIcon color="primary" sx={{ mr: 1.5, fontSize: 32 }} />
           <Typography variant="h6" component="h2" sx={{ fontWeight: 'bold' }}>
-            {project.name}
+            {project.nom}
           </Typography>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
@@ -37,7 +37,7 @@ export default function ProjectCard({ project }) {
       </CardContent>
       <Box sx={{ mt: 2, pt: 2, borderTop: '1px solid #eee' }}>
         <Typography variant="caption" color="text.secondary">
-          Product Backlog: {project.productBacklog}
+          {project.productBacklog?.nom || "Aucun backlog"} : {project.productBacklog?.description || ""}
         </Typography>
       </Box>
     </Card>

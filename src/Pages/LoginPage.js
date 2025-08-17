@@ -18,6 +18,12 @@ export default function Login() {
 
     try {
       const user = await login(email, password);
+      const userData = {
+        username: user.username,
+        token: user.token,
+        role: user.role
+      };
+      localStorage.setItem("user", JSON.stringify(userData));
       navigate("/dashboard");
     } catch (err) {
       alert("Invalid email or password");

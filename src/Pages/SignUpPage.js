@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Paper, Typography, TextField, Button, Box } from "@mui/material";
+import { Paper, Typography, TextField, Button, Box, MenuItem, Select, InputLabel, FormControl } from "@mui/material";
 import { signup } from "../Services/authService";
 
 export default function SignUpPage() {
@@ -9,9 +9,10 @@ export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("");
 
   const handleSignUp = async () => {
-    if (!username || !email || !password || !confirmPassword) {
+    if (!username || !email || !password || !confirmPassword || !role) {
       alert("All fields are required!");
       return;
     }
@@ -21,8 +22,8 @@ export default function SignUpPage() {
     }
 
     try {
-      await signup(username, email, password);
-      alert("Account created successfully!");
+      const response = await signup(username, email, password, role);
+      alert("Account created successfully!")
       navigate("/");
     } catch (error) {
       alert("Sign up failed: " + (error.response?.data?.message || error.message));
@@ -73,6 +74,15 @@ export default function SignUpPage() {
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
+
+        <FormControl fullWidth margin="normal">
+          <InputLabel>Role</InputLabel>
+          <Select value={role} label="Role" onChange={(e) => setRole(e.target.value)}>
+            <MenuItem value="PRODUCT_OWNER">Product Owner</MenuItem>
+            <MenuItem value="SCRUM_MASTER">Scrum Master</MenuItem>
+            <MenuItem value="DEVELOPPEUR">Développeur</MenuItem>
+          </Select>
+        </FormControl>
 
         <Button variant="contained" color="primary" fullWidth sx={{ mt: 4, py: 1.5, borderRadius: 2 }} onClick={handleSignUp}>
           Create an Account

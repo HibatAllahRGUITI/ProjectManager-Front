@@ -1,10 +1,12 @@
 import { Container, Grid, Typography, Button, Box, Menu, MenuItem, IconButton } from "@mui/material";
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ProjectCard from '../Components/ProjectCard';
 import AddProjectModal from '../Components/AddProjectModal';
 import ProjectPage from './ProjectPage';
+import { getProjectsByUser, addProject, editProject, deleteProject } from "../Services/projectService";
+import { createBacklog } from "../Services/productBacklogService";
 
 export default function Dashboard() {
   const [openAdd, setOpenAdd] = useState(false);
@@ -17,94 +19,133 @@ export default function Dashboard() {
   const [backlogDesc, setBacklogDesc] = useState("");
 
   const [selectedProject, setSelectedProject] = useState(null);
-
-  const [projects, setProjects] = useState([
-    { id: 1, name: "Site Web E-commerce", description: "Conception et développement d'une boutique en ligne.", productBacklog: null },
-    { id: 2, name: "Application Mobile de Fitness", description: "Suivi des entraînements et progrès.", productBacklog: null },
-    { id: 3, name: "Plateforme de Gestion de Projet", description: "Outil interne pour le suivi des tâches.", productBacklog: null },
-  ]);
+  const [projects, setProjects] = useState([]);
 
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuProjectId, setMenuProjectId] = useState(null);
 
-  const handleMenuOpen = (event, projectId) => {
+  // Ouvrir le menu
+  const handleMenuOpen = (event, id) => {
+    event.stopPropagation();
+    setMenuProjectId(id); // stocke l'ID sélectionné
     setAnchorEl(event.currentTarget);
-    setMenuProjectId(projectId);
   };
-  const handleMenuClose = () => { setAnchorEl(null); setMenuProjectId(null); };
 
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+    setMenuProjectId(null);
+  };
+
+  // Ajouter projet
   const handleOpenAdd = () => setOpenAdd(true);
   const handleCloseAdd = () => setOpenAdd(false);
-  const handleAddProject = () => {
-    const newProject = {
-      id: projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1,
-      name: projectTitle,
-      description: projectDesc,
-      productBacklog: null,
-    };
-    setProjects([...projects, newProject]);
-    setProjectTitle(""); setProjectDesc("");
-    handleCloseAdd();
+
+  const handleAddProject = async () => {
+    try {
+      const createdProject = await addProject(projectTitle, projectDesc);
+      setProjects([...projects, createdProject]);
+      setProjectTitle("");
+      setProjectDesc("");
+      handleCloseAdd();
+    } catch (error) {
+      alert("Error adding project: " + (error.response?.data?.message || error.message));
+    }
   };
 
+  // Edit projet
   const handleOpenEdit = () => {
+    if (!menuProjectId) return;
     const proj = projects.find(p => p.id === menuProjectId);
-    setProjectTitle(proj.name);
-    setProjectDesc(proj.description);
+    if (!proj) return;
+    setProjectTitle(proj.nom);
+    setProjectDesc(proj.description || "");
     setOpenEdit(true);
-    handleMenuClose();
+    setAnchorEl(null);
   };
+
   const handleCloseEdit = () => setOpenEdit(false);
-  const handleEditProject = () => {
-    setProjects(prevProjects =>
-      prevProjects.map(p =>
-        p.id === menuProjectId
-          ? { ...p, name: projectTitle, description: projectDesc }
-          : p
-      )
-    );
-    setProjectTitle("");
-    setProjectDesc("");
-    handleCloseEdit();
+
+  const handleEditProject = async () => {
+    if (!menuProjectId) {
+      alert("Project ID is null!");
+      return;
+    }
+    try {
+      const updatedProject = await editProject(menuProjectId, projectTitle, projectDesc);
+      setProjects(prev =>
+        prev.map(p => (p.id === menuProjectId ? updatedProject : p))
+      );
+      setProjectTitle("");
+      setProjectDesc("");
+      handleCloseEdit();
+    } catch (error) {
+      alert("Error editing project: " + (error.response?.data?.message || error.message));
+    }
   };
 
-  const handleDeleteProject = () => {
-    setProjects(projects.filter(p => p.id !== menuProjectId));
-    handleMenuClose();
+  // Supprimer projet
+  const handleDeleteProject = async () => {
+    try {
+      await deleteProject(menuProjectId);
+      setProjects(prev => prev.filter(p => p.id !== menuProjectId));
+      handleMenuClose();
+    } catch (error) {
+      alert("Error deleting project: " + (error.response?.data?.message || error.message));
+    }
   };
 
-  const handleOpenBacklog = () => {
+  // Backlog
+  const handleOpenBacklog = (id) => {
+    if (!id) return;
+    const proj = projects.find(p => p.id === id);
+    if (!proj) return;
+
     setBacklogTitle("");
     setBacklogDesc("");
+    setMenuProjectId(id); // stocke correctement l'ID sélectionné
     setOpenBacklog(true);
-    handleMenuClose();
   };
+
+
   const handleCloseBacklog = () => setOpenBacklog(false);
-  const handleCreateBacklog = () => {
-    const newBacklog = {
-      id: `ProductBacklog-${backlogTitle.replace(/\s/g, "")}-${menuProjectId}`,
-      name: backlogTitle,
-      description: backlogDesc,
-      epics: [],
-      freeUserStories: []
+
+  const handleCreateBacklog = async () => {
+    if (!menuProjectId) {
+      alert("Le backlog doit être associé à un projet !");
+      return;
+    }
+    try {
+      const createdBacklog = await createBacklog(menuProjectId, backlogTitle, backlogDesc);
+      setProjects(prev =>
+        prev.map(p =>
+          p.id === menuProjectId ? { ...p, productBacklog: createdBacklog } : p
+        )
+      );
+      handleCloseBacklog();
+    } catch (error) {
+      alert("Error creating backlog: " + (error.response?.data?.message || error.message));
+    }
+  };
+
+  // Sélectionner projet
+  const handleSelectProject = (project) => setSelectedProject(project);
+  const handleGoBack = () => setSelectedProject(null);
+
+  // Charger projets
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const userItem = localStorage.getItem('user');
+      if (!userItem) return;
+      try {
+        const user = JSON.parse(userItem);
+        const data = await getProjectsByUser(user.username);
+        setProjects(data);
+      } catch (error) {
+        console.error("Error fetching projects:", error.response?.data || error.message);
+      }
     };
-    setProjects(prevProjects =>
-      prevProjects.map(p =>
-        p.id === menuProjectId
-          ? { ...p, productBacklog: newBacklog }
-          : p
-      )
-    );
-    handleCloseBacklog();
-  };
-
-  const handleSelectProject = (project) => {
-    setSelectedProject(project);
-  };
-
-  const handleGoBack = () => {
-    setSelectedProject(null);
-  };
+    fetchProjects();
+  }, []);
 
   return (
     <Container sx={{ mt: 6, p: { xs: 2, md: 4 } }}>
@@ -126,7 +167,10 @@ export default function Dashboard() {
               <Grid item xs={12} sm={6} md={4} key={p.id}>
                 <Box sx={{ position: "relative" }} onClick={() => handleSelectProject(p)}>
                   <ProjectCard project={p} />
-                  <IconButton sx={{ position: "absolute", top: 8, right: 8 }} onClick={(e) => { e.stopPropagation(); handleMenuOpen(e, p.id) }}>
+                  <IconButton
+                    sx={{ position: "absolute", top: 8, right: 8 }}
+                    onClick={(e) => handleMenuOpen(e, p.id)}
+                  >
                     <MoreVertIcon />
                   </IconButton>
                 </Box>
@@ -137,20 +181,48 @@ export default function Dashboard() {
           <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
             <MenuItem onClick={handleOpenEdit}>Edit</MenuItem>
             <MenuItem onClick={handleDeleteProject}>Delete</MenuItem>
-            <MenuItem onClick={handleOpenBacklog}>Create Product Backlog</MenuItem>
+            <MenuItem onClick={() => handleOpenBacklog(menuProjectId)}>
+              Create Product Backlog
+            </MenuItem>
+
           </Menu>
 
-          <AddProjectModal open={openAdd} handleClose={handleCloseAdd} handleAddProject={handleAddProject}
-            projectTitle={projectTitle} setProjectTitle={setProjectTitle} projectDesc={projectDesc} setProjectDesc={setProjectDesc}
-            titleText="Add projet" buttonText="Add" />
+          {/* Modals */}
+          <AddProjectModal
+            open={openAdd}
+            handleClose={handleCloseAdd}
+            handleAddProject={handleAddProject}
+            projectTitle={projectTitle}
+            setProjectTitle={setProjectTitle}
+            projectDesc={projectDesc}
+            setProjectDesc={setProjectDesc}
+            titleText="Add project"
+            buttonText="Add"
+          />
 
-          <AddProjectModal open={openEdit} handleClose={handleCloseEdit} handleAddProject={handleEditProject}
-            projectTitle={projectTitle} setProjectTitle={setProjectTitle} projectDesc={projectDesc} setProjectDesc={setProjectDesc}
-            titleText="Edit projet" buttonText="Save" />
+          <AddProjectModal
+            open={openEdit}
+            handleClose={handleCloseEdit}
+            handleAddProject={handleEditProject}
+            projectTitle={projectTitle}
+            setProjectTitle={setProjectTitle}
+            projectDesc={projectDesc}
+            setProjectDesc={setProjectDesc}
+            titleText="Edit project"
+            buttonText="Save"
+          />
 
-          <AddProjectModal open={openBacklog} handleClose={handleCloseBacklog} handleAddProject={handleCreateBacklog}
-            projectTitle={backlogTitle} setProjectTitle={setBacklogTitle} projectDesc={backlogDesc} setBacklogDesc={setBacklogDesc}
-            titleText="Create Product Backlog" buttonText="Create" />
+          <AddProjectModal
+            open={openBacklog}
+            handleClose={handleCloseBacklog}
+            handleAddProject={handleCreateBacklog}
+            projectTitle={backlogTitle}
+            setProjectTitle={setBacklogTitle}
+            projectDesc={backlogDesc}
+            setProjectDesc={setBacklogDesc}
+            titleText="Create Product Backlog"
+            buttonText="Create"
+          />
         </>
       ) : (
         <ProjectPage project={selectedProject} onGoBack={handleGoBack} sprintBacklogs={[]} />
