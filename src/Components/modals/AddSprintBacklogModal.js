@@ -1,33 +1,48 @@
-// src/components/AddSprintBacklogModal.jsx
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Stack } from "@mui/material";
+import { useEffect, useState } from "react";
 
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button } from "@mui/material";
-import { useState } from "react";
+export default function AddSprintBacklogModal({ open, onClose, onSave, initialSB }) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
-export default function AddSprintBacklogModal({ open, handleClose, handleAddSprintBacklog }) {
-  const [title, setTitle] = useState("");
+  useEffect(() => {
+    if (open) {
+      setName(initialSB?.sprint?.name || "");
+      setDescription(initialSB?.sprint?.description || "");
+      setStartDate(initialSB?.sprint?.startDate || "");
+      setEndDate(initialSB?.sprint?.endDate || "");
+    }
+  }, [open, initialSB]);
 
   const handleSubmit = () => {
-    handleAddSprintBacklog({ title });
-    setTitle("");
-    handleClose();
+    onSave({
+      id: initialSB?.id || null,
+      sprint: {
+        id: initialSB?.sprint?.id || null,
+        name,
+        description,
+        startDate, // format yyyy-MM-dd
+        endDate,
+      },
+    });
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
-      <DialogTitle>Add a SprintBacklog</DialogTitle>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+      <DialogTitle>{initialSB ? "Edit Sprint Backlog" : "Add Sprint Backlog"}</DialogTitle>
       <DialogContent>
-        <TextField
-          autoFocus
-          margin="dense"
-          label="Title of the SprintBacklog"
-          fullWidth
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-        />
+        <Stack spacing={2} sx={{ mt: 1 }}>
+          <TextField label="Sprint name" value={name} onChange={(e) => setName(e.target.value)} fullWidth />
+          <TextField label="Description" value={description} onChange={(e) => setDescription(e.target.value)} fullWidth multiline minRows={2} />
+          <TextField label="Start date" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+          <TextField label="End date" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} InputLabelProps={{ shrink: true }} />
+        </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSubmit}>Add</Button>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button variant="contained" onClick={handleSubmit}>{initialSB ? "Save" : "Create"}</Button>
       </DialogActions>
     </Dialog>
   );

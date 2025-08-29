@@ -9,11 +9,11 @@ export default function SprintBacklogCard({ sprint }) {
                 borderRadius: 2,
                 mb: 2,
                 bgcolor: "#fff",
-                border: "1px solid #e0e0e0"
+                border: "1px solid #e0e0e0",
             }}
         >
             <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
-                {sprint.name}
+                {sprint.sprintName || sprint.sprint?.name || "Unnamed Sprint"}
             </Typography>
         </Paper>
     );

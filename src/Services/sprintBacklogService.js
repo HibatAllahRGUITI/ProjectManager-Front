@@ -44,3 +44,19 @@ export const createSprintBacklog = async (backlogId, sprintId) => {
     }
 };
 
+export const deleteSprintBacklog = async (id) => {
+    try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const token = user?.token;
+
+        await axios.delete(`${API_URL}/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+    } catch (error) {
+        console.error("Error deleting sprint backlog:", error.response?.data || error.message);
+        throw error;
+    }
+};
+

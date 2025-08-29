@@ -33,3 +33,39 @@ export const createEpic = async (productBacklogId, nom, description) => {
         throw error;
     }
 };
+
+export const updateEpic = async (id, { nom, description }) => {
+    try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const token = user?.token;
+
+        const epicDTO = { nom, description };
+
+        const response = await axios.put(`${API_URL}/${id}`, epicDTO, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        return response.data;
+    } catch (error) {
+        console.error("Error updating epic:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+export const deleteEpic = async (id) => {
+    try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const token = user?.token;
+
+        await axios.delete(`${API_URL}/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+    } catch (error) {
+        console.error("Error deleting epic:", error.response?.data || error.message);
+        throw error;
+    }
+};

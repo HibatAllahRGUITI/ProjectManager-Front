@@ -33,7 +33,7 @@ export default function ProjectPage() {
   const handleAddEpic = async (newEpic) => {
     try {
       console.log("epic: ", newEpic);
-      const createdEpic = await createEpic(productBacklog.id, newEpic.title, newEpic.description);
+      const createdEpic = await createEpic(productBacklog.id, newEpic.nom, newEpic.description);
       setProject(prev => ({
         ...prev,
         epics: [...prev.epics, { ...createdEpic, userStories: [] }]
@@ -45,8 +45,8 @@ export default function ProjectPage() {
 
   const handleAddUserStory = async (newUserStory) => {
     try {
-      console.log("User Story title: ", newUserStory.title);
-      const createdUserStory = await createUserStory(productBacklog.id, newUserStory.title, newUserStory.description);
+      console.log("User Story : ", newUserStory);
+      const createdUserStory = await createUserStory(productBacklog.id, newUserStory.titre, newUserStory.description);
 
       setProject(prev => {
         if (newUserStory.epicId) {
@@ -71,24 +71,36 @@ export default function ProjectPage() {
 
   const handleAddSprintBacklog = async (newSprintBacklog) => {
     try {
-      console.log("Sprint", newSprintBacklog);
-      const createdSprint = await createSprint({ name: newSprintBacklog.title });
+      console.log("SprintBacklog", newSprintBacklog);
+
+      const sprintData = {
+        name: newSprintBacklog.sprint.name,
+        description: newSprintBacklog.sprint.description,
+        startDate: newSprintBacklog.sprint.startDate,
+        endDate: newSprintBacklog.sprint.endDate,
+      };
+
+      const createdSprint = await createSprint(sprintData);
       const createdSprintBacklog = await createSprintBacklog(productBacklog.id, createdSprint.id);
+
       const enrichedSprintBacklog = {
         ...createdSprintBacklog,
-        sprint: { id: createdSprint.id, name: createdSprint.name },
+        sprint: createdSprint,
         sprintName: createdSprint.name,
         userStories: [],
       };
+
       setProject(prev => ({
         ...prev,
-        sprintBacklogs: [...prev.sprintBacklogs || [], enrichedSprintBacklog],
-        sprintBacklogsWithNames: [...prev.sprintBacklogsWithNames || [], enrichedSprintBacklog]
+        sprintBacklogs: [...(prev.sprintBacklogs || []), enrichedSprintBacklog],
+        sprintBacklogsWithNames: [...(prev.sprintBacklogsWithNames || []), enrichedSprintBacklog],
       }));
     } catch (err) {
       console.error("Failed to add sprint backlog:", err);
     }
   };
+
+
 
   const handleInviteUser = (email) => { };
 
@@ -219,14 +231,15 @@ export default function ProjectPage() {
       <Box sx={{ flexGrow: 1, p: 4 }}>
         {section === "product" ? (
           <ProductBacklogPage
-            epics={epics}
-            freeUserStories={freeUserStories}
-            sprintBacklogs={sprintBacklogsWithNames}
             onCreateEpic={handleAddEpic}
             onCreateUserStory={handleAddUserStory}
             onCreateSprint={handleAddSprintBacklog}
             productBacklog={productBacklog}
+            epics={epics}
+            freeUserStories={freeUserStories}
+            sprintBacklogs={sprintBacklogsWithNames}
           />
+
         ) : section === "sprint" ? (
           <SprintBacklogPage
             sprint={sprintBacklogsWithNames.find((s) => s.id === selectedSprintId)}
