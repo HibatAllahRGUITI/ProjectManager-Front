@@ -83,7 +83,7 @@ export default function ProjectPage() {
       setProject(prev => ({
         ...prev,
         sprintBacklogs: [...prev.sprintBacklogs || [], enrichedSprintBacklog],
-        sprintBacklogsWithNames: [...prev.sprintBacklogsWithNames, enrichedSprintBacklog]
+        sprintBacklogsWithNames: [...prev.sprintBacklogsWithNames || [], enrichedSprintBacklog]
       }));
     } catch (err) {
       console.error("Failed to add sprint backlog:", err);

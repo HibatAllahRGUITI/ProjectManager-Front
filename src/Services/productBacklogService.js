@@ -39,3 +39,27 @@ export const getProductBacklogByProjectId = async (projectId) => {
         throw error;
     }
 };
+
+export const editBacklog = async (backlogId, title, description) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = user?.token;
+    const response = await axios.put(`${API_URL}/${backlogId}`, {
+        nom: title,
+        description
+    }, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+    return response.data;
+};
+
+export const deleteBacklog = async (backlogId) => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = user?.token;
+    await axios.delete(`${API_URL}/${backlogId}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        }
+    });
+};

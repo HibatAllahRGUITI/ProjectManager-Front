@@ -6,7 +6,7 @@ import ProjectCard from '../Components/cards/ProjectCard';
 import AddProjectModal from '../Components/modals/AddProjectModal';
 import { useNavigate } from 'react-router-dom';
 import { getProjectsByUser, addProject, editProject, deleteProject } from "../Services/projectService";
-import { createBacklog, getProductBacklogByProjectId } from "../Services/productBacklogService";
+import { createBacklog, getProductBacklogByProjectId, editBacklog, deleteBacklog } from "../Services/productBacklogService";
 import { useProject } from '../contexts/ProjectContext';
 
 export default function Dashboard() {
@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [projects, setProjects] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [menuProjectId, setMenuProjectId] = useState(null);
+  const [isEditBacklog, setIsEditBacklog] = useState(false);
 
   const { setProject } = useProject();
   const navigate = useNavigate();
@@ -46,11 +47,14 @@ export default function Dashboard() {
     setAnchorEl(null);
   };
   const handleCloseEdit = () => setOpenEdit(false);
-  const handleOpenBacklog = (id) => {
+  const handleOpenBacklog = (id, edit = false) => {
     if (!id) return;
-    setBacklogTitle("");
-    setBacklogDesc("");
+    const project = projects.find(p => p.id === id);
+    if (!project) return;
+    setBacklogTitle(edit ? project.productBacklog?.title || "" : "");
+    setBacklogDesc(edit ? project.productBacklog?.description || "" : "");
     setMenuProjectId(id);
+    setIsEditBacklog(edit);
     setOpenBacklog(true);
   };
   const handleCloseBacklog = () => setOpenBacklog(false);
@@ -86,14 +90,39 @@ export default function Dashboard() {
       alert("Error deleting project: " + (error.response?.data?.message || error.message));
     }
   };
+
   const handleCreateBacklog = async () => {
-    if (!menuProjectId) return alert("Backlog must be associated to a Project !");
+    if (!menuProjectId) return alert("Backlog must be associated to a Project!");
     try {
-      const createdBacklog = await createBacklog(menuProjectId, backlogTitle, backlogDesc);
-      setProjects(prev => prev.map(p => (p.id === menuProjectId ? { ...p, productBacklog: createdBacklog } : p)));
+      let updatedBacklog;
+      if (isEditBacklog) {
+        const project = projects.find(p => p.id === menuProjectId);
+        if (!project?.productBacklog) return alert("No Product Backlog to edit!");
+        updatedBacklog = await editBacklog(project.productBacklog.id, backlogTitle, backlogDesc);
+      } else {
+        updatedBacklog = await createBacklog(menuProjectId, backlogTitle, backlogDesc);
+      }
+
+      setProjects(prev =>
+        prev.map(p => (p.id === menuProjectId ? { ...p, productBacklog: updatedBacklog } : p))
+      );
       handleCloseBacklog();
     } catch (error) {
-      alert("Error creating backlog: " + (error.response?.data?.message || error.message));
+      alert("Error saving backlog: " + (error.response?.data?.message || error.message));
+    }
+  };
+
+  const handleDeleteBacklog = async () => {
+    try {
+      const project = projects.find(p => p.id === menuProjectId);
+      if (!project?.productBacklog) return alert("No Product Backlog to delete!");
+      await deleteBacklog(project.productBacklog.id);
+      setProjects(prev =>
+        prev.map(p => (p.id === menuProjectId ? { ...p, productBacklog: null } : p))
+      );
+      handleMenuClose();
+    } catch (error) {
+      alert("Error deleting backlog: " + (error.response?.data?.message || error.message));
     }
   };
 
@@ -151,15 +180,32 @@ export default function Dashboard() {
       </Grid>
 
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem onClick={handleOpenEdit}>Edit</MenuItem>
-        <MenuItem onClick={handleDeleteProject}>Delete</MenuItem>
-        <MenuItem onClick={() => handleOpenBacklog(menuProjectId)}>Create Product Backlog</MenuItem>
+        <MenuItem onClick={handleOpenEdit}>Edit Project</MenuItem>
+        <MenuItem onClick={handleDeleteProject}>Delete Project</MenuItem>
+        {projects.find(p => p.id === menuProjectId)?.productBacklog ? (
+          <>
+            <MenuItem onClick={() => handleOpenBacklog(menuProjectId, true)}>Edit Product Backlog</MenuItem>
+            <MenuItem onClick={handleDeleteBacklog}>Delete Product Backlog</MenuItem>
+          </>
+        ) : (
+          <MenuItem onClick={() => handleOpenBacklog(menuProjectId, false)}>Create Product Backlog</MenuItem>
+        )}
       </Menu>
 
       {/* Modals */}
       <AddProjectModal open={openAdd} handleClose={handleCloseAdd} handleAddProject={handleAddProject} projectTitle={projectTitle} setProjectTitle={setProjectTitle} projectDesc={projectDesc} setProjectDesc={setProjectDesc} titleText="Add project" buttonText="Add" />
       <AddProjectModal open={openEdit} handleClose={handleCloseEdit} handleAddProject={handleEditProject} projectTitle={projectTitle} setProjectTitle={setProjectTitle} projectDesc={projectDesc} setProjectDesc={setProjectDesc} titleText="Edit project" buttonText="Save" />
-      <AddProjectModal open={openBacklog} handleClose={handleCloseBacklog} handleAddProject={handleCreateBacklog} projectTitle={backlogTitle} setProjectTitle={setBacklogTitle} projectDesc={backlogDesc} setProjectDesc={setBacklogDesc} titleText="Create Product Backlog" buttonText="Create" />
+      <AddProjectModal
+        open={openBacklog}
+        handleClose={handleCloseBacklog}
+        handleAddProject={handleCreateBacklog}
+        projectTitle={backlogTitle}
+        setProjectTitle={setBacklogTitle}
+        projectDesc={backlogDesc}
+        setProjectDesc={setBacklogDesc}
+        titleText={isEditBacklog ? "Edit Product Backlog" : "Create Product Backlog"}
+        buttonText={isEditBacklog ? "Save" : "Create"}
+      />
     </Container>
   );
 }

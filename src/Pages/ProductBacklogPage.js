@@ -21,7 +21,6 @@ export default function ProductBacklogPage({
   const [openUserStory, setOpenUserStory] = useState(false);
   const [openSprint, setOpenSprint] = useState(false);
 
-  // 🔹 Logs pour vérifier les données à l'ouverture
   useEffect(() => {
     console.log("📝 ProductBacklogPage mounted");
     console.log("Epics:", epics);
