@@ -23,13 +23,13 @@ export const createUserStory = async (backlogId, titre, description) => {
         const user = JSON.parse(localStorage.getItem('user'));
         const token = user?.token;
         const response = await axios.post(`${API_URL}/backlog/${backlogId}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
-        }, {
             titre,
             description,
             statut: "TO_DO"
+        }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
         });
         return response.data;
     } catch (error) {
