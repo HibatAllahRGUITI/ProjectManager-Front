@@ -1,14 +1,20 @@
-// src/components/Sidebar.jsx
 import { Box, List, ListItemButton, ListItemIcon, ListItemText, Typography } from "@mui/material";
 import DescriptionIcon from "@mui/icons-material/Description";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 
-export default function Sidebar({ onSelectSection, currentSection, sprintBacklogs, onSelectSprint, selectedSprintId }) {
+export default function Sidebar({
+  onSelectSection,
+  currentSection,
+  sprintBacklogs,
+  onSelectSprint,
+  selectedSprintId,
+  productBacklogName,
+}) {
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h6" sx={{ fontWeight: "bold", mb: 2 }}>
-        Project Manger
+        Project Manager
       </Typography>
 
       <List component="nav">
@@ -27,14 +33,14 @@ export default function Sidebar({ onSelectSection, currentSection, sprintBacklog
           }}
         >
           <ListItemIcon><DescriptionIcon /></ListItemIcon>
-          <ListItemText primary="Product Backlog" />
+          <ListItemText primary={productBacklogName || "Product Backlog"} />
         </ListItemButton>
 
         <Typography variant="subtitle2" sx={{ mt: 3, mb: 1, color: "text.secondary", textTransform: "uppercase" }}>
           Sprints
         </Typography>
 
-        {sprintBacklogs.map((sprint) => (
+        {Array.isArray(sprintBacklogs) && sprintBacklogs.map((sprint) => (
           <ListItemButton
             key={sprint.id}
             onClick={() => onSelectSprint(sprint.id)}
@@ -51,7 +57,7 @@ export default function Sidebar({ onSelectSection, currentSection, sprintBacklog
             }}
           >
             <ListItemIcon><CheckCircleIcon /></ListItemIcon>
-            <ListItemText primary={sprint.title} />
+            <ListItemText primary={sprint.sprintName || `Sprint #${sprint.sprintId}`} />
           </ListItemButton>
         ))}
 
@@ -65,7 +71,7 @@ export default function Sidebar({ onSelectSection, currentSection, sprintBacklog
           }}
         >
           <ListItemIcon><PersonAddIcon /></ListItemIcon>
-          <ListItemText primary="Invite People " />
+          <ListItemText primary="Invite People" />
         </ListItemButton>
       </List>
     </Box>

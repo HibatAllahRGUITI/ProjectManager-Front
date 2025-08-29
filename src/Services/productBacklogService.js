@@ -21,3 +21,21 @@ export const createBacklog = async (projectId, title, description) => {
         throw error;
     }
 };
+
+export const getProductBacklogByProjectId = async (projectId) => {
+    try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const token = user?.token;
+        console.log("sprint token:", token);
+
+        const response = await axios.get(`${API_URL}/project/${projectId}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching product backlog:", error.response?.data || error.message);
+        throw error;
+    }
+};

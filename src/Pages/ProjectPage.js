@@ -1,64 +1,138 @@
-import { Box, Drawer } from "@mui/material";
-import { useState } from "react";
+import { Box, Drawer, Typography, CircularProgress, Button } from "@mui/material";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from 'react-router-dom';
 import Sidebar from "../Components/Sidebar";
 import ProductBacklogPage from "./ProductBacklogPage";
 import SprintBacklogPage from "./SprintBacklogPage";
-import InviteModal from "../Components/InviteModal";
-
-const newUserStoryBase = {
-  tasks: { "to-do": [], "in-progress": [], "done": [] },
-};
+import InviteModal from "../Components/modals/InviteModal";
+import { getProductBacklogByProjectId } from "../Services/productBacklogService";
+import { getEpicsByBacklogId } from "../Services/epicService";
+import { getSprintBacklogByProductBacklogId } from "../Services/sprintBacklogService";
+import { getUserStoriesByBacklogId } from "../Services/userStoryService";
+import { useProject } from '../contexts/ProjectContext';
+import { getSprintById } from "../Services/sprintService";
 
 export default function ProjectPage() {
-  const [section, setSection] = useState("product");
-  const [sprintBacklogs, setSprintBacklogs] = useState([]);
-  const [epics, setEpics] = useState([
-    { id: "epic-1", title: "Authentification", userStories: [] },
-    { id: "epic-2", title: "Panier et Paiement", userStories: [] },
-  ]);
-  const [freeUserStories, setFreeUserStories] = useState([
-    { id: "us-1", title: "En tant que client, je veux m'inscrire", ...newUserStoryBase },
-    { id: "us-2", title: "En tant que client, je veux me connecter", ...newUserStoryBase },
-    { id: "us-3", title: "En tant qu'admin, je veux réinitialiser un mot de passe", ...newUserStoryBase },
-    { id: "us-4", title: "En tant que client, je veux ajouter des produits au panier", ...newUserStoryBase },
-    { id: "us-5", title: "En tant que client, je veux payer ma commande", ...newUserStoryBase },
-  ]);
-  const [selectedSprintId, setSelectedSprintId] = useState(null);
+  const { projectId } = useParams();
+  const navigate = useNavigate();
+  const { project, setProject } = useProject();
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [section, setSection] = useState("product");
+  const [selectedSprintId, setSelectedSprintId] = useState(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
   const [invitedUsers, setInvitedUsers] = useState([]);
+  const [sprintBacklogsWithNames, setSprintBacklogsWithNames] = useState([]);
 
-  const handleInviteUser = ({ email, role }) => {
-    setInvitedUsers([...invitedUsers, { email, role }]);
-    console.log("Utilisateur invité:", email, role);
-  };
-
-  const handleAddSprintBacklog = (newSprint) => {
-    const userStories = newSprint.userStories || [];
-    const newSprintWithId = {
-      id: `sprint-${Date.now()}`,
-      ...newSprint,
-      userStories: userStories.map((us) => ({
-        ...us,
-        tasks: us.tasks || { "to-do": [], "in-progress": [], "done": [] },
-      })),
-    };
-    setSprintBacklogs([...sprintBacklogs, newSprintWithId]);
-  };
-
-  const handleUpdateEpics = (newEpics) => setEpics(newEpics);
-  const handleUpdateFreeUserStories = (newStories) =>
-    setFreeUserStories(
-      newStories.map((us) => ({
-        ...us,
-        tasks: us.tasks || { "to-do": [], "in-progress": [], "done": [] },
-      }))
-    );
-  const handleUpdateSprints = (newSprints) => setSprintBacklogs(newSprints);
   const handleSelectSprint = (sprintId) => {
     setSelectedSprintId(sprintId);
     setSection("sprint");
   };
+
+  const handleAddEpic = (newEpic) => { };
+  const handleAddUserStory = (newUserStory) => { };
+  const handleAddSprintBacklog = (newSprintBacklog) => { };
+  const handleInviteUser = (email) => { };
+
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!projectId) {
+        setError("Missed Project ID in the URL.");
+        setLoading(false);
+        return;
+      }
+
+      if (project && project.id === parseInt(projectId) && project.epics && project.sprintBacklogs) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        setLoading(true);
+
+        const productBacklog = await getProductBacklogByProjectId(projectId);
+        if (!productBacklog) {
+          setError("Product Backlog not found for this Project.");
+          setLoading(false);
+          return;
+        }
+
+        const [epicsData, userStoriesData, sprintsData] = await Promise.all([
+          getEpicsByBacklogId(productBacklog.id),
+          getUserStoriesByBacklogId(productBacklog.id),
+          getSprintBacklogByProductBacklogId(productBacklog.id)
+        ]);
+
+        const enrichedSprintBacklogs = await Promise.all(
+          sprintsData.map(async (sb) => {
+            try {
+              const sprint = await getSprintById(sb.sprint?.id);
+              return { ...sb, sprintName: sprint.name };
+            } catch {
+              return { ...sb, sprintName: "Unnamed Sprint" };
+            }
+          })
+        );
+        setSprintBacklogsWithNames(enrichedSprintBacklogs);
+
+        const epicMap = new Map(epicsData.map(epic => [epic.id, { ...epic, userStories: [] }]));
+        const sprintMap = new Map(sprintsData.map(sprint => [sprint.id, { ...sprint, userStories: [] }]));
+
+        const freeUserStories = [];
+        userStoriesData.forEach(us => {
+          const epicId = us.epic?.id || us.epicId;
+          const sprintId = us.sprintBacklog?.id || us.sprintBacklogId;
+
+          if (epicId && epicMap.has(epicId)) {
+            epicMap.get(epicId).userStories.push(us);
+          } else if (sprintId && sprintMap.has(sprintId)) {
+            sprintMap.get(sprintId).userStories.push(us);
+          } else {
+            freeUserStories.push(us);
+          }
+        });
+
+        const completeProjectData = {
+          id: parseInt(projectId),
+          productBacklog: productBacklog,
+          epics: Array.from(epicMap.values()),
+          freeUserStories: freeUserStories,
+          sprintBacklogs: Array.from(sprintMap.values()),
+        };
+
+        console.log("✅ Data Loaded Successfully:", completeProjectData);
+        setProject(completeProjectData);
+
+      } catch (err) {
+        setError("Error while loading project data.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjectData();
+  }, [projectId, project, setProject]);
+
+  if (loading || !project) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <CircularProgress />
+        <Typography sx={{ mt: 2 }}>Chargement des données du projet...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 4, textAlign: "center" }}>
+        <Typography color="error">{error}</Typography>
+        <Button onClick={() => navigate('/dashboard')}>Retour au tableau de bord</Button>
+      </Box>
+    );
+  }
+
+  const { productBacklog, epics, sprintBacklogs, freeUserStories } = project;
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
@@ -77,33 +151,31 @@ export default function ProjectPage() {
         }}
       >
         <Sidebar
-          onSelectSection={(sec) => {
-            if (sec === "invite") setIsInviteModalOpen(true);
-            else setSection(sec);
-          }}
+          onSelectSection={(sec) => sec === "invite" ? setIsInviteModalOpen(true) : setSection(sec)}
           currentSection={section}
-          sprintBacklogs={sprintBacklogs}
+          productBacklogName={productBacklog?.nom}
           onSelectSprint={handleSelectSprint}
           selectedSprintId={selectedSprintId}
+          sprintBacklogs={sprintBacklogsWithNames}
         />
       </Drawer>
-
       <Box sx={{ flexGrow: 1, p: 4 }}>
         {section === "product" ? (
           <ProductBacklogPage
             epics={epics}
-            onUpdateEpics={handleUpdateEpics}
             freeUserStories={freeUserStories}
-            onUpdateFreeUserStories={handleUpdateFreeUserStories}
-            sprintBacklogs={sprintBacklogs}
-            onAddSprintBacklog={handleAddSprintBacklog}
-            onUpdateSprints={handleUpdateSprints}
+            sprintBacklogs={sprintBacklogsWithNames}
+            onCreateEpic={handleAddEpic}
+            onCreateUserStory={handleAddUserStory}
+            onCreateSprint={handleAddSprintBacklog}
+            productBacklog={productBacklog}
           />
         ) : section === "sprint" ? (
-          <SprintBacklogPage sprint={sprintBacklogs.find((s) => s.id === selectedSprintId)} />
+          <SprintBacklogPage
+            sprint={sprintBacklogsWithNames.find((s) => s.id === selectedSprintId)}
+          />
         ) : null}
       </Box>
-
       <InviteModal
         open={isInviteModalOpen}
         handleClose={() => setIsInviteModalOpen(false)}

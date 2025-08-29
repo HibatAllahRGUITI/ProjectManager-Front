@@ -2,9 +2,9 @@ import { Box, Typography, Button, Paper } from "@mui/material";
 import { useState } from "react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import AddIcon from "@mui/icons-material/Add";
-import TaskCard from "../Components/TaskCard";
-import AddTaskModal from "../Components/AddTaskModal";
-import DetailModal from "../Components/DetailModal";
+import TaskCard from "../Components/cards/TaskCard";
+import AddTaskModal from "../Components/modals/AddTaskModal";
+import DetailModal from "../Components/modals/DetailModal";
 
 const initialData = {
     id: "sprint-1",

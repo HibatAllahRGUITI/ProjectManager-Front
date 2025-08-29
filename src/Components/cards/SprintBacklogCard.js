@@ -13,7 +13,7 @@ export default function SprintBacklogCard({ sprint }) {
             }}
         >
             <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
-                {sprint.title}
+                {sprint.name}
             </Typography>
         </Paper>
     );

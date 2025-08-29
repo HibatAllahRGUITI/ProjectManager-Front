@@ -20,7 +20,7 @@ export default function UserStoryCard({ userStory }) {
       <CardContent sx={{ display: "flex", alignItems: "center", p: 2, "&:last-child": { pb: 2 } }}>
         <DragIndicator sx={{ mr: 1, color: "text.secondary" }} />
         <Typography variant="body1" sx={{ flexGrow: 1 }}>
-          {userStory.title}
+          {userStory.nom}
         </Typography>
         <PersonIcon sx={{ ml: 1, color: "text.secondary" }} />
       </CardContent>
