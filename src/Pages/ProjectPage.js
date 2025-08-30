@@ -71,20 +71,24 @@ export default function ProjectPage() {
 
   const handleAddSprintBacklog = async (newSprintBacklog) => {
     try {
-      console.log("SprintBacklog", newSprintBacklog);
-
       const sprintData = {
         name: newSprintBacklog.sprint.name,
         description: newSprintBacklog.sprint.description,
         startDate: newSprintBacklog.sprint.startDate,
         endDate: newSprintBacklog.sprint.endDate,
       };
-
       const createdSprint = await createSprint(sprintData);
       const createdSprintBacklog = await createSprintBacklog(productBacklog.id, createdSprint.id);
+      console.log("createdSprintBacklog: ", createdSprintBacklog);
 
-      const enrichedSprintBacklog = {
+      if (!createdSprintBacklog.id) {
+        console.error("SprintBacklog returned without ID!", createdSprintBacklog);
+        return;
+      }
+
+      const enrichedSB = {
         ...createdSprintBacklog,
+        id: createdSprintBacklog.id,
         sprint: createdSprint,
         sprintName: createdSprint.name,
         userStories: [],
@@ -92,11 +96,12 @@ export default function ProjectPage() {
 
       setProject(prev => ({
         ...prev,
-        sprintBacklogs: [...(prev.sprintBacklogs || []), enrichedSprintBacklog],
-        sprintBacklogsWithNames: [...(prev.sprintBacklogsWithNames || []), enrichedSprintBacklog],
+        sprintBacklogs: [...(prev.sprintBacklogs || []), enrichedSB],
+        sprintBacklogsWithNames: [...(prev.sprintBacklogsWithNames || []), enrichedSB],
       }));
     } catch (err) {
       console.error("Failed to add sprint backlog:", err);
+      alert("Erreur lors de la création du sprint backlog !");
     }
   };
 
@@ -137,7 +142,7 @@ export default function ProjectPage() {
           sprintsData.map(async (sb) => {
             try {
               const sprint = await getSprintById(sb.sprint?.id);
-              return { ...sb, sprintName: sprint.name };
+              return { ...sb, id: sb.id, sprintName: sprint.name };
             } catch {
               return { ...sb, sprintName: "Unnamed Sprint" };
             }

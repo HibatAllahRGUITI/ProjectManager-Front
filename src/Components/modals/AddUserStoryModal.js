@@ -1,8 +1,7 @@
 import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid, MenuItem } from "@mui/material";
 import { useEffect, useState } from "react";
 
-const STATUTS = ["TO_DO", "IN_PROGRESS", "CODE_REVIEW", "TESTING", "DONE"]; // adapte aux valeurs de ton StatutEnum
-
+const STATUTS = ["TO_DO", "IN_PROGRESS", "CODE_REVIEW", "TESTING", "DONE"];
 export default function AddUserStoryModal({ open, onClose, onSave, initialUS, epicOptions = [], sprintOptions = [], defaultProductBacklogId }) {
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
@@ -46,6 +45,7 @@ export default function AddUserStoryModal({ open, onClose, onSave, initialUS, ep
       productBacklogId: defaultProductBacklogId,
     });
   };
+
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>

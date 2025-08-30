@@ -74,7 +74,13 @@ export default function Dashboard() {
     if (!menuProjectId) return alert("Project ID is null!");
     try {
       const updatedProject = await editProject(menuProjectId, projectTitle, projectDesc);
-      setProjects(prev => prev.map(p => (p.id === menuProjectId ? updatedProject : p)));
+      setProjects(prev =>
+        prev.map(p =>
+          p.id === menuProjectId
+            ? { ...updatedProject, productBacklog: p.productBacklog }
+            : p
+        )
+      );
       setProjectTitle(""); setProjectDesc("");
       handleCloseEdit();
     } catch (error) {
@@ -132,7 +138,6 @@ export default function Dashboard() {
     navigate(`/project/${project.id}`);
   };
 
-  // ───────── useEffect pour récupérer les projets ─────────
   useEffect(() => {
     const fetchProjects = async () => {
       const userItem = localStorage.getItem('user');

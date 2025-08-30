@@ -38,22 +38,17 @@ export const createUserStory = async (backlogId, titre, description) => {
     }
 };
 
-export const updateUserStoryPriority = async (id, newPriority) => {
-    try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        const token = user?.token;
+export const updateUserStory = async (id, userStoryData) => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    const token = user?.token;
 
-        const response = await axios.put(
-            `${API_URL}/${id}/priority`,
-            { priority: newPriority }, // newPriority doit être une string compatible avec ton enum MoSCoW
-            { headers: { Authorization: `Bearer ${token}` } }
-        );
+    const response = await axios.put(
+        `${API_URL}/${id}`,
+        userStoryData,
+        { headers: { Authorization: `Bearer ${token}` } }
+    );
 
-        return response.data;
-    } catch (error) {
-        console.error("Error updating user story priority:", error.response?.data || error.message);
-        throw error;
-    }
+    return response.data;
 };
 
 export const deleteUserStory = async (id) => {
