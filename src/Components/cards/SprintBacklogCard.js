@@ -1,7 +1,7 @@
 import { Paper, Typography, IconButton, Box } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
-export default function SprintBacklogCard({ sprint, onDelete }) {
+export default function SprintBacklogCard({ sprint, onDelete, children }) {
     return (
         <Paper
             key={sprint.id ?? `sb-${Math.random()}`}
@@ -14,7 +14,7 @@ export default function SprintBacklogCard({ sprint, onDelete }) {
                 border: "1px solid #e0e0e0",
             }}
         >
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
                 <Typography variant="h6" sx={{ fontWeight: "bold" }}>
                     {sprint.sprintName || sprint.sprint?.name || "Unnamed Sprint"}
                 </Typography>
@@ -26,6 +26,10 @@ export default function SprintBacklogCard({ sprint, onDelete }) {
                         <DeleteIcon />
                     </IconButton>
                 )}
+            </Box>
+
+            <Box>
+                {children}
             </Box>
         </Paper>
     );

@@ -192,7 +192,7 @@ export default function ProjectPage() {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
         <CircularProgress />
-        <Typography sx={{ mt: 2 }}>Chargement des données du projet...</Typography>
+        <Typography sx={{ mt: 2 }}>Loading Project Data...</Typography>
       </Box>
     );
   }
@@ -201,12 +201,13 @@ export default function ProjectPage() {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
         <Typography color="error">{error}</Typography>
-        <Button onClick={() => navigate('/dashboard')}>Retour au tableau de bord</Button>
+        <Button onClick={() => navigate('/dashboard')}>Back to Dashboard</Button>
       </Box>
     );
   }
 
-  const { productBacklog, epics, sprintBacklogs, freeUserStories } = project;
+  const { productBacklog, epics, freeUserStories } = project;
+  const selectedSprint = sprintBacklogsWithNames.find((s) => s.id === selectedSprintId);
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f5f5f5" }}>
@@ -245,11 +246,14 @@ export default function ProjectPage() {
             sprintBacklogs={sprintBacklogsWithNames}
           />
 
-        ) : section === "sprint" ? (
-          <SprintBacklogPage
-            sprint={sprintBacklogsWithNames.find((s) => s.id === selectedSprintId)}
-          />
-        ) : null}
+        ) : section === "sprint" && selectedSprint && Array.isArray(selectedSprint.userStories) ? (<SprintBacklogPage
+          sprint={selectedSprint}
+        />
+        ) : (
+          <Box>
+            <Typography>Please select a sprint.</Typography>
+          </Box>
+        )}
       </Box>
       <InviteModal
         open={isInviteModalOpen}

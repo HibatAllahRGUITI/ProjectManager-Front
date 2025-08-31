@@ -65,3 +65,32 @@ export const deleteUserStory = async (id) => {
     }
 };
 
+export const assignUserStory = async (id, { epicId = null, sprintBacklogId = null }) => {
+    try {
+        const user = JSON.parse(localStorage.getItem("user"));
+        const token = user?.token;
+
+        const response = await axios.put(
+            `${API_URL}/${id}/assign`,
+            { epicId, sprintBacklogId },
+            { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        return response.data;
+    } catch (error) {
+        console.error("Error assigning user story:", error.response?.data || error.message);
+        throw error;
+    }
+};
+
+export const getUserStoryById = async (id) => {
+    const response = await axios.get(`${API_URL}/${id}`);
+    return response.data;
+};
+
+export const fetchUserStoriesByIds = async (ids = []) => {
+    if (!ids.length) return [];
+    const promises = ids.map(id => getUserStoryById(id));
+    const results = await Promise.all(promises);
+    return results;
+};
