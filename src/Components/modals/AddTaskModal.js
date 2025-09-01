@@ -1,5 +1,3 @@
-// src/Components/AddTaskModal.jsx
-
 import { useState } from "react";
 import { Modal, Box, Typography, TextField, Button } from "@mui/material";
 
@@ -17,25 +15,24 @@ const style = {
 
 export default function AddTaskModal({ open, handleClose, handleAddTask }) {
     const [taskTitle, setTaskTitle] = useState("");
+    const [taskDescription, setTaskDescription] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
         if (taskTitle.trim()) {
-            handleAddTask(taskTitle);
+            handleAddTask({ title: taskTitle, description: taskDescription });
             setTaskTitle("");
+            setTaskDescription("");
         }
     };
 
     return (
-        <Modal
-            open={open}
-            onClose={handleClose}
-            aria-labelledby="add-task-modal-title"
-        >
+        <Modal open={open} onClose={handleClose} aria-labelledby="add-task-modal-title">
             <Box sx={style} component="form" onSubmit={handleSubmit}>
-                <Typography id="add-task-modal-title" variant="h6" component="h2" mb={2}>
+                <Typography id="add-task-modal-title" variant="h6" mb={2}>
                     Add a New Task
                 </Typography>
+
                 <TextField
                     fullWidth
                     label="Title of the task"
@@ -45,6 +42,18 @@ export default function AddTaskModal({ open, handleClose, handleAddTask }) {
                     required
                     sx={{ mb: 2 }}
                 />
+
+                <TextField
+                    fullWidth
+                    label="Description"
+                    variant="outlined"
+                    multiline
+                    rows={3}
+                    value={taskDescription}
+                    onChange={(e) => setTaskDescription(e.target.value)}
+                    sx={{ mb: 2 }}
+                />
+
                 <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
                     <Button variant="outlined" onClick={handleClose}>
                         Cancel

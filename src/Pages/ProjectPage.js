@@ -22,7 +22,6 @@ export default function ProjectPage() {
   const [section, setSection] = useState("product");
   const [selectedSprintId, setSelectedSprintId] = useState(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
-  const [invitedUsers, setInvitedUsers] = useState([]);
   const [sprintBacklogsWithNames, setSprintBacklogsWithNames] = useState([]);
 
   const handleSelectSprint = (sprintId) => {
@@ -32,8 +31,7 @@ export default function ProjectPage() {
 
   const handleAddEpic = async (newEpic) => {
     try {
-      console.log("epic: ", newEpic);
-      const createdEpic = await createEpic(productBacklog.id, newEpic.nom, newEpic.description);
+      const createdEpic = await createEpic(project.productBacklog.id, newEpic.nom, newEpic.description);
       setProject(prev => ({
         ...prev,
         epics: [...prev.epics, { ...createdEpic, userStories: [] }]
@@ -45,9 +43,7 @@ export default function ProjectPage() {
 
   const handleAddUserStory = async (newUserStory) => {
     try {
-      console.log("User Story : ", newUserStory);
-      const createdUserStory = await createUserStory(productBacklog.id, newUserStory.titre, newUserStory.description);
-
+      const createdUserStory = await createUserStory(project.productBacklog.id, newUserStory.titre, newUserStory.description);
       setProject(prev => {
         if (newUserStory.epicId) {
           return {
@@ -59,10 +55,7 @@ export default function ProjectPage() {
             )
           };
         }
-        return {
-          ...prev,
-          freeUserStories: [...prev.freeUserStories, createdUserStory]
-        };
+        return { ...prev, freeUserStories: [...prev.freeUserStories, createdUserStory] };
       });
     } catch (err) {
       console.error("Failed to add user story:", err);
@@ -78,17 +71,10 @@ export default function ProjectPage() {
         endDate: newSprintBacklog.sprint.endDate,
       };
       const createdSprint = await createSprint(sprintData);
-      const createdSprintBacklog = await createSprintBacklog(productBacklog.id, createdSprint.id);
-      console.log("createdSprintBacklog: ", createdSprintBacklog);
-
-      if (!createdSprintBacklog.id) {
-        console.error("SprintBacklog returned without ID!", createdSprintBacklog);
-        return;
-      }
+      const createdSprintBacklog = await createSprintBacklog(project.productBacklog.id, createdSprint.id);
 
       const enrichedSB = {
         ...createdSprintBacklog,
-        id: createdSprintBacklog.id,
         sprint: createdSprint,
         sprintName: createdSprint.name,
         userStories: [],
@@ -97,17 +83,13 @@ export default function ProjectPage() {
       setProject(prev => ({
         ...prev,
         sprintBacklogs: [...(prev.sprintBacklogs || []), enrichedSB],
-        sprintBacklogsWithNames: [...(prev.sprintBacklogsWithNames || []), enrichedSB],
       }));
+      setSprintBacklogsWithNames(prev => [...prev, enrichedSB]);
     } catch (err) {
       console.error("Failed to add sprint backlog:", err);
       alert("Erreur lors de la création du sprint backlog !");
     }
   };
-
-
-
-  const handleInviteUser = (email) => { };
 
   useEffect(() => {
     const fetchProjectData = async () => {
@@ -117,68 +99,67 @@ export default function ProjectPage() {
         return;
       }
 
-      if (project && project.id === parseInt(projectId) && project.epics && project.sprintBacklogs) {
-        setLoading(false);
-        return;
-      }
-
       try {
         setLoading(true);
 
         const productBacklog = await getProductBacklogByProjectId(projectId);
-        if (!productBacklog) {
-          setError("Product Backlog not found for this Project.");
-          setLoading(false);
-          return;
-        }
-
         const [epicsData, userStoriesData, sprintsData] = await Promise.all([
           getEpicsByBacklogId(productBacklog.id),
           getUserStoriesByBacklogId(productBacklog.id),
-          getSprintBacklogByProductBacklogId(productBacklog.id)
+          getSprintBacklogByProductBacklogId(productBacklog.id),
         ]);
 
+        // Maps
+        const epicMap = new Map(epicsData.map(epic => [epic.id, { ...epic, userStories: [] }]));
+        const sprintMap = new Map(sprintsData.map(sb => [sb.id, { ...sb, userStories: [] }]));
+
+        // User Stories placement
+        userStoriesData.forEach(us => {
+          const sprintId = us.sprintBacklog?.id || us.sprintBacklogId;
+          const epicId = us.epic?.id || us.epicId;
+
+          const normalizedUS = {
+            ...us,
+            title: us.titre,
+            tasks: us.tasks || { "to-do": [], "in-progress": [], "done": [] },
+          };
+
+          if (epicId && epicMap.has(epicId)) {
+            epicMap.get(epicId).userStories.push(normalizedUS);
+          } else if (sprintId && sprintMap.has(sprintId)) {
+            sprintMap.get(sprintId).userStories.push(normalizedUS);
+          }
+        });
+
+        const freeUserStories = userStoriesData.filter(
+          us => !us.epicId && !us.sprintBacklogId
+        );
+
+        // Enrich sprints with sprint names
         const enrichedSprintBacklogs = await Promise.all(
-          sprintsData.map(async (sb) => {
+          Array.from(sprintMap.values()).map(async (sb) => {
             try {
               const sprint = await getSprintById(sb.sprint?.id);
-              return { ...sb, id: sb.id, sprintName: sprint.name };
+              return { ...sb, sprintName: sprint.name };
             } catch {
               return { ...sb, sprintName: "Unnamed Sprint" };
             }
           })
         );
-        setSprintBacklogsWithNames(enrichedSprintBacklogs);
-
-        const epicMap = new Map(epicsData.map(epic => [epic.id, { ...epic, userStories: [] }]));
-        const sprintMap = new Map(sprintsData.map(sprint => [sprint.id, { ...sprint, userStories: [] }]));
-
-        const freeUserStories = [];
-        userStoriesData.forEach(us => {
-          const epicId = us.epic?.id || us.epicId;
-          const sprintId = us.sprintBacklog?.id || us.sprintBacklogId;
-
-          if (epicId && epicMap.has(epicId)) {
-            epicMap.get(epicId).userStories.push(us);
-          } else if (sprintId && sprintMap.has(sprintId)) {
-            sprintMap.get(sprintId).userStories.push(us);
-          } else {
-            freeUserStories.push(us);
-          }
-        });
 
         const completeProjectData = {
           id: parseInt(projectId),
-          productBacklog: productBacklog,
+          productBacklog,
           epics: Array.from(epicMap.values()),
-          freeUserStories: freeUserStories,
-          sprintBacklogs: Array.from(sprintMap.values()),
+          freeUserStories,
+          sprintBacklogs: enrichedSprintBacklogs,
         };
 
-        console.log("✅ Data Loaded Successfully:", completeProjectData);
         setProject(completeProjectData);
+        setSprintBacklogsWithNames(enrichedSprintBacklogs);
 
       } catch (err) {
+        console.error(err);
         setError("Error while loading project data.");
       } finally {
         setLoading(false);
@@ -186,7 +167,7 @@ export default function ProjectPage() {
     };
 
     fetchProjectData();
-  }, [projectId, project, setProject]);
+  }, [projectId, setProject]);
 
   if (loading || !project) {
     return (
@@ -234,6 +215,7 @@ export default function ProjectPage() {
           sprintBacklogs={sprintBacklogsWithNames}
         />
       </Drawer>
+
       <Box sx={{ flexGrow: 1, p: 4 }}>
         {section === "product" ? (
           <ProductBacklogPage
@@ -245,20 +227,17 @@ export default function ProjectPage() {
             freeUserStories={freeUserStories}
             sprintBacklogs={sprintBacklogsWithNames}
           />
-
-        ) : section === "sprint" && selectedSprint && Array.isArray(selectedSprint.userStories) ? (<SprintBacklogPage
-          sprint={selectedSprint}
-        />
+        ) : section === "sprint" && selectedSprint ? (
+          <SprintBacklogPage sprint={selectedSprint} />
         ) : (
-          <Box>
-            <Typography>Please select a sprint.</Typography>
-          </Box>
+          <Typography>Please select a sprint.</Typography>
         )}
       </Box>
+
       <InviteModal
         open={isInviteModalOpen}
         handleClose={() => setIsInviteModalOpen(false)}
-        handleInvite={handleInviteUser}
+        handleInvite={() => { }}
       />
     </Box>
   );

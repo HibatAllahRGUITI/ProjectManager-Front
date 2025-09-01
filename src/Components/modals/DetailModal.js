@@ -18,6 +18,7 @@ export default function DetailModal({
     handleDelete,
 }) {
     const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
 
     useEffect(() => {
         if (item) setTitle(item.title || "");
@@ -25,12 +26,19 @@ export default function DetailModal({
 
     const onSave = () => {
         if (!title.trim()) return;
-        handleUpdate({ ...item, title });
+        handleUpdate({ ...item, title, description });
     };
 
     const onDelete = () => {
         handleDelete(item.id);
     };
+
+    useEffect(() => {
+        if (item) {
+            setTitle(item.title || "");
+            setDescription(item.description || "");
+        }
+    }, [item]);
 
     return (
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
@@ -44,6 +52,17 @@ export default function DetailModal({
                         onChange={(e) => setTitle(e.target.value)}
                     />
                 </Box>
+                <Box sx={{ mt: 2 }}>
+                    <TextField
+                        label="Description"
+                        fullWidth
+                        multiline
+                        rows={4}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
+                </Box>
+
                 {/* Ici tu peux ajouter d'autres champs selon le type */}
             </DialogContent>
             <DialogActions>
