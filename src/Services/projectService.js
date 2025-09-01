@@ -18,11 +18,11 @@ export const getProjectsByUser = async (username) => {
     }
 };
 
-export const addProject = async (title, description) => {
+export const addProject = async (nom, description) => {
     try {
         const user = JSON.parse(localStorage.getItem('user'));
         const token = user?.token;
-        const response = await axios.post(API_URL, { nom: title, description }, {
+        const response = await axios.post(API_URL, { nom, description }, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
@@ -61,6 +61,22 @@ export const deleteProject = async (id) => {
         });
     } catch (error) {
         console.error('Error deleting project:', error.response?.data || error.message);
+        throw error;
+    }
+};
+
+export const inviteUserToProject = async (projectId, email) => {
+    try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const token = user?.token;
+        const response = await axios.post(`${API_URL}/${projectId}/invite`, { email }, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error inviting user:', error.response?.data || error.message);
         throw error;
     }
 };

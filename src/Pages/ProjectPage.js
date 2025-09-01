@@ -1,16 +1,19 @@
 import { Box, Drawer, Typography, CircularProgress, Button } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
+import { useProject } from '../contexts/ProjectContext';
+
 import Sidebar from "../Components/Sidebar";
 import ProductBacklogPage from "./ProductBacklogPage";
 import SprintBacklogPage from "./SprintBacklogPage";
 import InviteModal from "../Components/modals/InviteModal";
+
 import { getProductBacklogByProjectId } from "../Services/productBacklogService";
 import { getEpicsByBacklogId, createEpic } from "../Services/epicService";
 import { getSprintBacklogByProductBacklogId, createSprintBacklog } from "../Services/sprintBacklogService";
 import { getUserStoriesByBacklogId, createUserStory } from "../Services/userStoryService";
-import { useProject } from '../contexts/ProjectContext';
 import { getSprintById, createSprint } from "../Services/sprintService";
+import { inviteUserToProject } from "../Services/projectService";
 
 export default function ProjectPage() {
   const { projectId } = useParams();
@@ -237,7 +240,15 @@ export default function ProjectPage() {
       <InviteModal
         open={isInviteModalOpen}
         handleClose={() => setIsInviteModalOpen(false)}
-        handleInvite={() => { }}
+        handleInvite={async ({ email }) => {
+          try {
+            console.log("projectId: ", project.id);
+            await inviteUserToProject(project.id, email);
+            alert(`User ${email} added to project !`);
+          } catch (err) {
+            alert(err.response?.data || err.message);
+          }
+        }}
       />
     </Box>
   );

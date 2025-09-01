@@ -40,13 +40,11 @@ export default function ProductBacklogPage({
   const epicOptions = useMemo(() => epics.map(e => ({ id: e.id, nom: e.nom })), [epics]);
   const sprintOptions = useMemo(() => sprintBacklogs.map(s => ({ id: s.id, sprint: s.sprint })), [sprintBacklogs]);
 
-  // 🔹 Charger toutes les User Stories à partir des IDs des Sprints
   useEffect(() => {
     const sprintUSIds = sprintBacklogs.flatMap(sb => sb.userStoryIds || []);
     fetchUserStoriesByIds(sprintUSIds).then(fetchedUS => {
       const fromEpics = epics.flatMap(e => e.userStories || []);
       const combined = [...fromEpics, ...freeUserStories, ...fetchedUS];
-      // éliminer doublons
       const uniqueUS = Array.from(new Map(combined.map(us => [us.id, us])).values());
       setAllUserStories(uniqueUS);
     });

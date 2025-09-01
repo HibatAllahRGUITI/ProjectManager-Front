@@ -30,18 +30,7 @@ export default function InviteModal({ open, handleClose, handleInvite }) {
                     onChange={(e) => setEmail(e.target.value)}
                     sx={{ mb: 2 }}
                 />
-                <TextField
-                    label="Role"
-                    select
-                    fullWidth
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    sx={{ mb: 3 }}
-                >
-                    <MenuItem value="productOwner">ProductOwner</MenuItem>
-                    <MenuItem value="scrumMaster">ScrumMaster</MenuItem>
-                    <MenuItem value="developer">Developer</MenuItem>
-                </TextField>
+
                 <Button variant="contained" fullWidth onClick={handleSubmit}>Invite</Button>
             </Box>
         </Modal>
